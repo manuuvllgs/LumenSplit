@@ -12,9 +12,18 @@ export default function Home() {
     return (
       <section className="grid items-center gap-10 py-4 md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] md:gap-14 md:py-12">
         <div className="max-w-xl">
-          <h1 className="text-4xl leading-[1.05] text-ink-900 sm:text-5xl lg:text-6xl">
+          {/* Enough line-height + a highlight that sits inside the line box, so the gold
+              band never covers the descenders (p, g, y) of the line above. */}
+          <h1 className="text-4xl leading-[1.2] text-ink-900 sm:text-5xl lg:text-6xl">
             {t('Divide gastos con amigos.')}{' '}
-            <span className="bg-accent-400 box-decoration-clone px-1.5 text-on-accent">{t('Salda cuentas en segundos.')}</span>
+            <span
+              className="box-decoration-clone px-1.5 text-on-accent"
+              style={{
+                backgroundImage: 'linear-gradient(transparent 12%, var(--gold) 12%, var(--gold) 96%, transparent 96%)',
+              }}
+            >
+              {t('Salda cuentas en segundos.')}
+            </span>
           </h1>
           <p className="mt-6 max-w-lg text-base text-ink-700 sm:text-lg">
             {t('Una forma nueva de compartir gastos, construida sobre la blockchain de Stellar: pagos que llegan en segundos a cualquier país, comisiones de menos de un céntimo y un registro compartido que nadie puede alterar.')}
