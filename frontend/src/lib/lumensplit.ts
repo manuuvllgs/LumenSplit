@@ -1,10 +1,9 @@
 /**
  * LumenSplit data layer — the ONLY module the UI talks to.
  *
- * Right now every function is backed by an in-browser mock (see ./mock.ts).
- * Person 1: swap the bodies for calls to the generated bindings in
- * `src/contract/` keeping these exact signatures and types, and the UI keeps
- * working unchanged.
+ * Backed by the deployed contract (./soroban.ts) when VITE_CONTRACT_ID is set,
+ * or by an in-browser mock (./mock.ts) when it is empty or VITE_USE_MOCK=true.
+ * Both implement exactly these signatures.
  *
  * Conventions (mirror the Soroban contract):
  * - Amounts are `bigint` in the token's smallest unit (7 decimals: 1 XLM = 10_000_000n).
@@ -12,7 +11,11 @@
  * - Write functions return the transaction hash so the UI can link to stellar.expert.
  * - Write functions throw `LumenSplitError` (see ./errors.ts) on failure.
  */
-import * as mock from './mock'
+import * as mockImpl from './mock'
+import * as sorobanImpl from './soroban'
+
+export const isMock: boolean = !import.meta.env.VITE_CONTRACT_ID || import.meta.env.VITE_USE_MOCK === 'true'
+const mock = isMock ? mockImpl : sorobanImpl
 
 export type Address = string // Stellar account, "G..."
 
@@ -118,5 +121,3 @@ export function suggestSettlements(groupId: number): Promise<Transfer[]> {
 export function listMyGroups(address: Address): Promise<Group[]> {
   return mock.listMyGroups(address)
 }
-
-export const isMock = true
