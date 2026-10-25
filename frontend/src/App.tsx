@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router-dom'
 import { isMock } from './lib/lumensplit'
-import { useAliases } from './lib/aliases'
+import { useNames } from './lib/aliases'
 import { KeyHint } from './components/ui'
 import { useWallet, WalletProvider } from './wallet'
 import Home from './pages/Home'
@@ -10,10 +10,11 @@ import GroupDetail from './pages/GroupDetail'
 import AddExpense from './pages/AddExpense'
 import Settle from './pages/Settle'
 import Join from './pages/Join'
+import { NameGate } from './components/NameSetup'
 
 function Shell({ children }: { children: ReactNode }) {
   const { address, disconnect } = useWallet()
-  const aliases = useAliases()
+  const aliases = useNames([address])
   return (
     <div className="mx-auto min-h-screen max-w-md px-4 pb-16">
       <header className="flex items-center justify-between py-4">
@@ -37,7 +38,9 @@ function Shell({ children }: { children: ReactNode }) {
           )}
         </div>
       </header>
-      <main>{children}</main>
+      <main>
+        <NameGate>{children}</NameGate>
+      </main>
     </div>
   )
 }

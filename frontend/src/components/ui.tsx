@@ -1,6 +1,8 @@
 import { useState, type ButtonHTMLAttributes, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { setAlias, useAliases } from '../lib/aliases'
+import { setChosenName, useNames } from '../lib/aliases'
+import { humanizeError } from '../lib/errors'
+import { MAX_NAME_LENGTH, saveMyName, validateName } from '../lib/profile'
 import { explorerTxUrl, formatAmount, shortAddress } from '../lib/format'
 import type { TxState } from '../useTx'
 
@@ -64,8 +66,8 @@ export function Amount({ value, signed = false, className = '' }: { value: bigin
 }
 
 export function Avatar({ address }: { address: string }) {
-  const aliases = useAliases()
-  const label = aliases[address] ?? address.slice(1, 3)
+  const names = useNames([address])
+  const label = names[address] ?? address.slice(1, 3)
   let h = 0
   for (const c of address) h = (h * 31 + c.charCodeAt(0)) % 360
   return (
@@ -87,34 +89,65 @@ export function KeyHint({ address, className = '' }: { address: string; classNam
   )
 }
 
-/** Alias (or short address) with inline editing of the alias. */
+/**
+ * A person: their chosen name in black with the key small and grey underneath.
+ * On your own row (`editable`) the pencil changes your name on your Stellar account.
+ */
 export function MemberName({ address, me, editable = false }: { address: string; me?: string | null; editable?: boolean }) {
-  const aliases = useAliases()
+  const names = useNames([address])
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
-  const alias = aliases[address]
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const name = names[address]
+  const isMe = !!me && address === me
+
+  async function save() {
+    if (!me || draft.trim() === (name ?? '')) return setEditing(false)
+    const invalid = validateName(draft)
+    if (invalid) return setError(invalid)
+    setSaving(true)
+    setError(null)
+    try {
+      await saveMyName(me, draft)
+      setChosenName(me, draft)
+      setEditing(false)
+    } catch (e) {
+      setError(humanizeError(e))
+    } finally {
+      setSaving(false)
+    }
+  }
 
   if (editing) {
     return (
       <form
-        className="flex items-center gap-1"
+        className="flex flex-col gap-1"
         onSubmit={(e) => {
           e.preventDefault()
-          setAlias(address, draft)
-          setEditing(false)
+          void save()
         }}
       >
-        <input
-          autoFocus
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={() => {
-            setAlias(address, draft)
-            setEditing(false)
-          }}
-          placeholder="Alias"
-          className="w-28 rounded-md border border-ink-200 px-2 py-0.5 text-sm"
-        />
+        <span className="flex items-center gap-1">
+          <input
+            autoFocus
+            value={draft}
+            maxLength={MAX_NAME_LENGTH}
+            onChange={(e) => setDraft(e.target.value)}
+            placeholder="Tu nombre"
+            disabled={saving}
+            className="w-32 rounded-md border border-ink-200 px-2 py-0.5 text-sm"
+          />
+          <Button type="submit" variant="ghost" className="px-2! py-0.5!" loading={saving}>
+            {saving ? 'Firma…' : 'Guardar'}
+          </Button>
+          {!saving && (
+            <button type="button" onClick={() => setEditing(false)} className="text-xs text-ink-400">
+              ✕
+            </button>
+          )}
+        </span>
+        {error && <span className="text-xs text-neg-600">{error}</span>}
       </form>
     )
   }
@@ -122,23 +155,24 @@ export function MemberName({ address, me, editable = false }: { address: string;
   return (
     <span className="flex min-w-0 flex-col leading-tight">
       <span className="flex items-center gap-1 truncate font-medium text-ink-900">
-        {alias ?? shortAddress(address)}
-        {address === me && <span className="rounded bg-brand-100 px-1.5 text-[10px] font-semibold text-brand-700">TÚ</span>}
-        {editable && (
+        {name ?? <span className="text-ink-500">Sin nombre</span>}
+        {isMe && <span className="rounded bg-brand-100 px-1.5 text-[10px] font-semibold text-brand-700">TÚ</span>}
+        {editable && isMe && (
           <button
             type="button"
             onClick={() => {
-              setDraft(alias ?? '')
+              setDraft(name ?? '')
+              setError(null)
               setEditing(true)
             }}
             className="text-xs text-ink-400 hover:text-brand-600"
-            title="Poner alias"
+            title="Cambiar mi nombre"
           >
             ✎
           </button>
         )}
       </span>
-      {alias && <KeyHint address={address} />}
+      <KeyHint address={address} />
     </span>
   )
 }
