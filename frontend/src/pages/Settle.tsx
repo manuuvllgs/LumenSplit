@@ -13,7 +13,7 @@ export default function Settle() {
   const { address: me } = useWallet()
   const name = useDisplayName()
   const { data, error, loading, reload } = useAsync(() => Promise.all([getGroup(id), suggestSettlements(id)]), [id])
-  const [receipts, setReceipts] = useState<(Transfer & { hash: string })[]>([])
+  const [receipts, setReceipts] = useState<(Transfer & { hash: string; seconds: number })[]>([])
 
   if (loading && !data) return <Loading />
   if (error || !data) return <ErrorBox message={error ?? 'No se pudo cargar el grupo'} />
@@ -24,14 +24,15 @@ export default function Settle() {
     <div className="space-y-4">
       <PageHeader title="Saldar cuentas" back={`/g/${id}`} />
       <p className="text-sm text-ink-500">
-        La lista mínima de pagos para que en <b>{group.name}</b> todos queden a cero. Paga los tuyos con un clic: el
-        dinero se mueve en Stellar.
+        Los mínimos pagos para que en <b>{group.name}</b> todos queden en paz. Paga los tuyos con un toque: el dinero
+        llega al momento por Stellar.
       </p>
       {receipts.map((r) => (
-        <Card key={r.hash} className="flex items-center gap-3 bg-pos-50 ring-pos-600/20">
+        <Card key={r.hash} className="flex items-center gap-3 bg-pos-50! ring-pos-600/20!">
           <span className="text-pos-700">✓</span>
           <div className="min-w-0 flex-1 text-sm">
             Pagaste <Amount value={r.amount} /> a <b>{label(r.to)}</b>
+            <div className="text-xs text-ink-500">confirmado en {r.seconds.toLocaleString('es-ES', { maximumFractionDigits: 1 })} s</div>
           </div>
           <a href={explorerTxUrl(r.hash)} target="_blank" rel="noreferrer" className="text-sm font-semibold text-pos-700 underline">
             stellar.expert ↗
@@ -53,8 +54,8 @@ export default function Settle() {
               groupId={id}
               me={me}
               label={label}
-              onPaid={(hash) => {
-                setReceipts((rs) => [{ ...t, hash }, ...rs])
+              onPaid={(hash, seconds) => {
+                setReceipts((rs) => [{ ...t, hash, seconds }, ...rs])
                 void reload()
               }}
             />
@@ -76,15 +77,18 @@ function TransferRow({
   groupId: number
   me: string | null
   label: (a: string) => string
-  onPaid: (hash: string) => void
+  onPaid: (hash: string, seconds: number) => void
 }) {
   const { state, run, busy } = useTx()
   const mine = t.from === me
 
   async function pay() {
     if (!me) return
+    const started = performance.now()
     const res = await run((opts) => settle(groupId, me, t.to, t.amount, opts))
-    if (res) setTimeout(() => onPaid(res.hash), 1500)
+    if (!res) return
+    const seconds = (performance.now() - started) / 1000
+    setTimeout(() => onPaid(res.hash, seconds), 1500)
   }
 
   return (
@@ -100,7 +104,7 @@ function TransferRow({
           <Amount value={t.amount} className="text-base" />
         </div>
         {mine && state.status !== 'done' && (
-          <Button className="w-full" onClick={pay} loading={busy}>
+          <Button variant="accent" className="w-full" onClick={pay} loading={busy}>
             Pagar
           </Button>
         )}

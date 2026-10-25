@@ -10,13 +10,13 @@ export default function Home() {
   if (!address) {
     return (
       <div className="pt-10 text-center">
-        <h1 className="text-3xl font-extrabold leading-tight tracking-tight text-ink-900">
+        <h1 className="font-display text-4xl font-bold leading-tight tracking-tight text-ink-900">
           Divide gastos con amigos.
           <br />
-          <span className="text-brand-600">Salda deudas en segundos.</span>
+          <span className="text-brand-600">Salda cuentas en segundos.</span>
         </h1>
         <p className="mx-auto mt-4 max-w-xs text-ink-500">
-          Como Tricount, pero los pagos se liquidan con dinero real en la red Stellar.
+          Como Tricount, pero cuando toca pagar el dinero llega al momento, desde cualquier país y por menos de un céntimo.
         </p>
         <Button className="mt-8 w-full py-3 text-base" onClick={connect} loading={connecting}>
           Conectar Freighter
