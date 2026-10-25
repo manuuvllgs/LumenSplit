@@ -31,6 +31,7 @@ LumenSplit puts **tracking and paying in the same place**.
 2. Log expenses. They are split equally and everyone sees their balance (green = you're owed, red = you owe).
 3. Tap **Settle up**. The contract computes the **fewest payments** needed to bring everyone back to zero.
 4. Tap **Pay**. Real tokens (XLM or USDC) move on Stellar in about 5 seconds for a fraction of a cent, and the shared ledger updates at once.
+5. Only hold euros? Tap **Pay in euros**. Stellar's built-in exchange converts them on the fly, and your friend receives exactly what they are owed.
 
 The group's ledger lives in a Soroban smart contract: nobody can rewrite history, and every payment has a public receipt on the explorer.
 
@@ -38,11 +39,13 @@ The group's ledger lives in a Soroban smart contract: nobody can rewrite history
 - **Instant and nearly free**: ~5 s finality and fees around 0.00001 XLM, so paying back 3 € finally makes sense.
 - **Stablecoins**: a group can settle in USDC, so nobody is exposed to volatility.
 - **Stellar Asset Contracts**: the contract moves native assets directly with `transfer`, without wrapping.
-- **Path payments and anchors** (roadmap): pay in your currency, your friend receives theirs, and cash out to a bank.
+- **Path payments + native AMM** (built): pay in your currency and the network converts it at the best available rate, in the same few seconds.
+- **Anchors** (roadmap): cash out to a bank account.
 
 ### What makes it different
 - **On-chain debt simplification**: `suggest_settlements` turns a tangle of debts into the minimum list of transfers, computed by the contract so everyone sees the same answer.
 - **Safe one-tap settlement**: `settle` only lets you pay what you actually owe to someone who is actually owed. No overpaying.
+- **Pay in any currency**: a debtor can pay in EURT (our demo euro) while the group settles in XLM. A path payment routes the euros through Stellar's native AMM, so the person who is owed gets the exact amount. No bridge, no third-party exchange.
 - **No crypto jargon**: the UI talks about amounts, names and "Pay". The wallet is the only hint that it runs on a blockchain.
 
 ## Demo
@@ -62,15 +65,43 @@ flowchart LR
     U[User] -->|uses| FE[LumenSplit web app<br/>Vite + React + TS]
     FE -->|asks to sign tx| FR[Freighter wallet]
     FR -->|signed tx| FE
-    FE -->|simulate / send<br/>stellar-sdk + bindings| RPC[Soroban RPC<br/>testnet]
+    FE -->|simulate / send<br/>stellar-sdk| RPC[Soroban RPC<br/>testnet]
     RPC --> C[lumensplit contract<br/>groups · expenses · balances]
     C -->|transfer on settle| T[Token SAC<br/>XLM / USDC]
+    FE -->|path payment<br/>EURT → XLM| HZ[Horizon<br/>testnet]
+    HZ --> AMM[Native AMM pool<br/>EURT / XLM]
     FE -->|tx link| EX[Stellar Expert]
 ```
 
 - **Contract** (`contracts/lumensplit/`): Rust/Soroban. Stores groups, expenses and a balance per member. Every expense keeps the group ledger summing to zero.
-- **Frontend** (`frontend/`): Vite + React + TypeScript, `@stellar/stellar-sdk`, TypeScript bindings generated with `stellar contract bindings typescript`, and `@stellar/freighter-api` for signing.
+- **Frontend** (`frontend/`): Vite + React + TypeScript, `@stellar/stellar-sdk` and `@stellar/freighter-api` for signing. The contract client is built at runtime from the on-chain contract spec (`contract.Client.from`), so there is no code-generation step to keep in sync.
 - **Wallet**: Freighter signs every write (`create_group`, `add_expense`, `settle`). Reads are simulated, so they need no signature.
+
+### Pay in euros: how a cross-currency settlement works
+
+```mermaid
+sequenceDiagram
+    participant Ben as Ben (holds EURT)
+    participant App as LumenSplit
+    participant DEX as Stellar AMM (EURT/XLM)
+    participant C as lumensplit contract
+    participant Ana as Ana (is owed 43 XLM)
+    App->>DEX: quote: how much EURT for exactly 43 XLM?
+    DEX-->>App: ≈ 10.84 EURT
+    Ben->>DEX: 1. path payment (strict receive): EURT → 43 XLM to himself
+    Ben->>C: 2. settle(group, Ben, Ana, 43 XLM)
+    C->>Ana: transfer 43 XLM, ledger updated
+```
+
+Two signatures are needed because a Soroban contract call cannot share a transaction with classic operations. The path payment is *strict receive*: the amount Ana gets is exact, and Ben's maximum spend is capped at the quote plus 1% slippage. Code: [`frontend/src/lib/pathpay.ts`](frontend/src/lib/pathpay.ts).
+
+## Engineering notes
+
+**Cutting the cost of creating a group from ~4,700 XLM to ~6 XLM.** Our first deployment extended the storage TTL of every entry to 90 days on every write. On testnet, the rent paid up front made `create_group` cost **4,701 XLM** in fees (measured on Stellar Expert), enough to drain a Friendbot account in two groups. We removed the per-write extensions and let new entries take the network's minimum lifetime. Creating a group plus two expenses now costs **~6.8 XLM**, about 700× cheaper, with no change to the public API. A production version would extend TTL lazily, only when an entry is close to expiring.
+
+**The ledger always sums to zero.** Equal splits leave remainders (100 split by 3). The contract gives the extra units to the first participants, so balances are exact to the smallest unit and `suggest_settlements` can always clear the group.
+
+**Debt simplification** matches the largest debtor with the largest creditor until everyone is at zero, which needs at most *members − 1* transfers.
 
 ## Smart contract API
 
@@ -106,7 +137,19 @@ stellar contract deploy \
   --wasm target/wasm32v1-none/release/lumensplit.wasm \
   --source dev --network testnet --alias lumensplit
 ```
-A full CLI walkthrough (create group → add expense → balances → settle) is in [`docs/demo-cli.md`](docs/demo-cli.md).
+### Demo data
+```bash
+# Demo accounts (testnet only)
+for u in ana ben carla; do stellar keys generate $u --network testnet --fund; done
+
+# Group "Lisbon trip" with 5 expenses: ana +43, ben −59, carla +16
+./scripts/demo-seed.sh
+
+# Demo euro (EURT), an EURT/XLM AMM pool, and 500 EURT for each demo account
+cd frontend
+BEN_SECRET=$(stellar keys show ben) CARLA_SECRET=$(stellar keys show carla) \
+ANA_SECRET=$(stellar keys show ana) node scripts/setup-eurt.mjs
+```
 
 ### Frontend
 ```bash
@@ -122,6 +165,7 @@ VITE_CONTRACT_ID=...
 VITE_TOKEN_ID=...
 VITE_NETWORK=testnet
 VITE_RPC_URL=https://soroban-testnet.stellar.org
+VITE_PAY_ASSET=EURT:<issuer>   # printed by setup-eurt.mjs; hides "Pay in euros" if empty
 ```
 
 ## Deployed on testnet
@@ -130,10 +174,14 @@ VITE_RPC_URL=https://soroban-testnet.stellar.org
 |---|---|
 | LumenSplit contract | `CAY3ZW4JCDHB52I556P4DIY5BJ7KF3VMNNXE7ZNFOQ223DYSNC6UWEI2` ([explorer](https://stellar.expert/explorer/testnet/contract/CAY3ZW4JCDHB52I556P4DIY5BJ7KF3VMNNXE7ZNFOQ223DYSNC6UWEI2)) |
 | Settlement token (native XLM SAC) | `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC` ([explorer](https://stellar.expert/explorer/testnet/contract/CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC)) |
+| Demo euro asset (EURT) | `EURT:GARXWCPKKRVKGJ5D2ESLXF4LZKN5PFTSB5Z6WJK72RBUJV5TB33GP5B2` ([explorer](https://stellar.expert/explorer/testnet/asset/EURT-GARXWCPKKRVKGJ5D2ESLXF4LZKN5PFTSB5Z6WJK72RBUJV5TB33GP5B2)) |
+| EURT/XLM liquidity pool | `e81a98ae098802a5b8412fd30cd9ec8c1b813b59c27bc147768adb8a221382e6` ([explorer](https://stellar.expert/explorer/testnet/liquidity-pool/e81a98ae098802a5b8412fd30cd9ec8c1b813b59c27bc147768adb8a221382e6)) |
+
+EURT is a demo token we issued on testnet to make cross-currency payments reproducible. In production the same code works with EURC or USDC, since the path is found by the network at payment time.
 
 ## Roadmap
-1. **Now (hackathon):** groups, expenses, balances, minimal settlements and real payments on testnet.
-2. **Next:** pay in your own currency with path payments (EUR → USDC → XLM).
+1. **Now (hackathon):** groups, expenses, balances, minimal settlements, real payments on testnet, and paying in euros through path payments.
+2. **Next:** real stablecoins (EURC, USDC) as group and payment assets; pay several debts in one tap.
 3. **Then:** cash out to a bank account through Stellar anchors (SEP-24), invite friends with a link, recurring expenses.
 4. **Later:** mainnet, mobile app, passkey wallets so friends don't need to install anything.
 
