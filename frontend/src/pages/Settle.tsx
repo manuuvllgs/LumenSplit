@@ -8,8 +8,9 @@ import { explorerTxUrl, formatAmount, formatDecimalString, toDecimalString, TOKE
 import { useWallet } from '../wallet'
 import { useAsync } from '../useAsync'
 import { useTx } from '../useTx'
-import { Amount, Avatar, Button, Card, ErrorBox, Icon, KeyHint, Loading, PageHeader, Spinner, TxStatus } from '../components/ui'
+import { Amount, Avatar, Button, Card, ErrorBox, Icon, KeyHint, Loading, PageHeader, Spinner, TxStatus, EurHint } from '../components/ui'
 import { locale, t as tx } from '../i18n'
+import { useXlmEur } from '../lib/price'
 
 interface Receipt extends Transfer {
   hash: string
@@ -114,6 +115,7 @@ function SettleAllCard({
   onPaid: (r: AllReceipt) => void
 }) {
   const { state, run, busy } = useTx()
+  const xlmEur = useXlmEur()
   if (mine.length === 0) return null
   const total = mine.reduce((sum, t) => sum + t.amount, 0n)
   const people = mine.length === 1 ? tx('1 persona') : tx('{n} personas', { n: mine.length })
@@ -131,7 +133,10 @@ function SettleAllCard({
       <div>
         <div className="text-xs text-on-shade-muted">{tx('Debes en total')}</div>
         <div className="flex items-baseline justify-between gap-2">
-          <span className="figure text-4xl text-accent-400 sm:text-5xl">{formatAmount(total, true, 2)}</span>
+          <span className="figure text-4xl text-accent-400 sm:text-5xl">
+            {formatAmount(total, true, 2)}
+            {xlmEur !== null && <EurHint value={total} rate={xlmEur} />}
+          </span>
           <span className="text-xs text-on-shade-muted">{tx('a {people}', { people })}</span>
         </div>
       </div>
