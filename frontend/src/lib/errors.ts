@@ -48,6 +48,8 @@ export function humanizeError(e: unknown): string {
   if (/user declined|rejected|denied/i.test(raw)) return 'Has cancelado la firma en Freighter.'
   if (/not installed|freighter.*not.*(found|available)/i.test(raw))
     return 'No encontramos Freighter. Instala la extensión y recarga la página.'
+  if (/account not found|accountnotfound|Account .* not found/i.test(raw))
+    return 'Tu cuenta aún no existe en testnet. Fóndeala gratis con Friendbot y vuelve a intentarlo.'
   if (/underfunded|insufficient|balance/i.test(raw))
     return 'No tienes saldo suficiente en la cuenta para este pago.'
   if (/network|fetch|timeout/i.test(raw)) return 'Problema de conexión con la red Stellar. Inténtalo de nuevo.'
