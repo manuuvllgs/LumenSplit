@@ -2,3 +2,6 @@ target/
 .stellar/
 node_modules/
 .env
+
+# Hallmark design-skill working files
+.hallmark/

@@ -1,4 +1,4 @@
-import { Card, PageHeader } from '../components/ui'
+import { Card, PageHeader, Icon } from '../components/ui'
 import { getLang, t, type Lang } from '../i18n'
 
 type QA = { q: string; a: string }
@@ -135,16 +135,16 @@ const FAQ: Record<Lang, QA[]> = {
 export default function Faq() {
   const items = FAQ[getLang()]
   return (
-    <div>
+    <div className="mx-auto max-w-3xl">
       <PageHeader title={t('Preguntas frecuentes')} back="/" />
-      <Card className="divide-y divide-ink-100 p-0">
+      <Card className="divide-y divide-ink-200 p-0! sm:p-0!">
         {items.map((item) => (
-          <details key={item.q} className="group px-4 py-3">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-semibold text-ink-900">
+          <details key={item.q} className="group px-4 sm:px-6">
+            <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-3 font-display text-lg font-semibold text-ink-900">
               {item.q}
-              <span className="text-ink-400 transition-transform group-open:rotate-45">+</span>
+              <Icon name="plus" className="h-5 w-5 text-ink-500 transition-transform group-open:rotate-45" />
             </summary>
-            <p className="mt-2 text-sm leading-relaxed text-ink-700">{item.a}</p>
+            <p className="max-w-[65ch] pb-5 text-base leading-relaxed text-ink-700">{item.a}</p>
           </details>
         ))}
       </Card>

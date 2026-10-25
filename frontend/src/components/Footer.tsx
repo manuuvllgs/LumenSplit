@@ -1,66 +1,63 @@
 import { Link } from 'react-router-dom'
 import { t } from '../i18n'
+import { LanguagePicker } from './LanguagePicker'
+import { LogoMark, Wordmark } from './Logo'
 
 const AUTHORS = ['Manuel Villegas', 'Gregorio Torres', 'Alejandro Teva']
 
 /**
- * Full-width footer band. On phones it stacks; from `md` up it spreads into
- * columns: brand and pitch, authors, hackathon badge. Links and copyright below.
+ * The Dusk slate band: wordmark and pitch, authors, the hackathon, then the
+ * small print. One column on phones, three from md up.
  */
 export function Footer() {
   const year = 2026
   return (
-    <footer className="relative overflow-hidden rounded-t-3xl bg-ink-900 text-white md:rounded-t-[2.5rem]">
-      {/* Soft brand glows */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-24 right-[-5%] h-64 w-64 rounded-full bg-brand-600 opacity-40 blur-3xl md:h-96 md:w-96"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -bottom-24 left-[-5%] h-56 w-56 rounded-full bg-accent-400 opacity-20 blur-3xl md:h-80 md:w-80"
-      />
-
-      <div className="relative mx-auto max-w-6xl px-5 py-8 md:px-10 md:py-12">
-        <div className="grid gap-8 md:grid-cols-[1.4fr_1fr_auto] md:items-start md:gap-12">
+    <footer className="bg-shade text-on-shade" style={{ ['--logo-ink' as string]: 'var(--on-shade)' }}>
+      <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 md:py-14 lg:px-8">
+        <div className="grid gap-8 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)] md:gap-12">
           <div>
             <div className="flex items-center gap-2">
-              <img src="/logo-mark.svg" alt="" className="h-8 w-8 md:h-10 md:w-10" />
-              <span className="font-display text-xl font-bold tracking-tight md:text-2xl">LumenSplit</span>
+              <LogoMark className="h-9 w-9" />
+              <Wordmark className="text-xl md:text-2xl" />
             </div>
-            <p className="mt-3 max-w-sm text-sm text-white/60">{t('Divide gastos con amigos.')} {t('Salda cuentas en segundos.')}</p>
+            <p className="mt-3 max-w-sm text-sm text-on-shade-muted">
+              {t('Divide gastos con amigos.')} {t('Salda cuentas en segundos.')}
+            </p>
           </div>
 
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/50">{t('Autores')}</div>
-            <ul className="mt-3 flex flex-wrap gap-1.5 md:flex-col md:items-start md:gap-2">
+            <h2 className="text-sm font-semibold text-on-shade">{t('Autores')}</h2>
+            <ul className="mt-3 space-y-1.5 text-sm text-on-shade-muted">
               {AUTHORS.map((a) => (
-                <li key={a} className="rounded-full bg-white/10 px-3 py-1 text-sm font-medium ring-1 ring-white/15">
-                  {a}
-                </li>
+                <li key={a}>{a}</li>
               ))}
             </ul>
           </div>
 
-          <div className="inline-flex items-center gap-2 justify-self-start rounded-full bg-linear-to-r from-brand-600 to-brand-800 px-4 py-2 text-xs font-semibold shadow-sm md:text-sm">
-            <span aria-hidden className="text-accent-400">✦</span>
-            Made in HackMeridian Lisbon 2026
+          <div className="space-y-4">
+            <p className="border-l-4 border-accent-400 pl-3 text-sm font-semibold text-on-shade">
+              {t('Hecho en HackMeridian Lisboa 2026')}
+            </p>
+            <div>
+              <h2 className="sr-only">{t('Idioma')}</h2>
+              <LanguagePicker />
+            </div>
           </div>
         </div>
 
-        <div className="mt-8 flex flex-col gap-2 border-t border-white/10 pt-5 text-xs text-white/60 md:flex-row md:items-center md:justify-between">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <Link to="/faq" className="font-semibold text-white/80 hover:text-white">
-              FAQ
-            </Link>
-            <span aria-hidden>·</span>
-            <span>{t('Sin cookies ni rastreo')}</span>
-            <span aria-hidden>·</span>
-            <span>Stellar testnet</span>
-          </div>
-          <div className="text-white/40">
-            © {year} LumenSplit · {t('Código abierto bajo licencia MIT')}
-          </div>
+        <div className="mt-10 flex flex-col gap-3 border-t border-shade-rule pt-5 text-xs text-on-shade-muted md:flex-row md:items-center md:justify-between">
+          <ul className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            <li>
+              <Link to="/faq" className="font-semibold text-on-shade underline underline-offset-2">
+                {t('Preguntas frecuentes')}
+              </Link>
+            </li>
+            <li>{t('Sin cookies ni rastreo')}</li>
+            <li className="key">Stellar testnet</li>
+          </ul>
+          <p>
+            © {year} LumenSplit. {t('Código abierto bajo licencia MIT')}
+          </p>
         </div>
       </div>
     </footer>

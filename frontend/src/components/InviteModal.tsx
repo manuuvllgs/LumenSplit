@@ -4,7 +4,7 @@ import { createInvite, type Invite } from '../lib/lumensplit'
 import { getPendingNames, setPendingNames } from '../lib/aliases'
 import { withPendingNames } from '../lib/inviteLink'
 import { useTx } from '../useTx'
-import { Button, TxStatus } from './ui'
+import { Button, Icon, TxStatus } from './ui'
 import { t } from '../i18n'
 
 /**
@@ -78,42 +78,42 @@ export function InviteModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-ink-900/50 p-4 sm:items-center"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-scrim p-4 sm:items-center"
       onClick={() => !busy && onClose()}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-label={t('Invitar amigos')}
-        className="max-h-[90vh] w-full max-w-sm space-y-4 overflow-y-auto rounded-2xl bg-white p-5 shadow-sm"
+        className="max-h-[90dvh] w-full max-w-md space-y-5 overflow-y-auto rounded-2xl bg-surface p-5 ring-1 ring-ink-200 sm:p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h2 className="text-lg font-bold">{t('Invitar amigos')}</h2>
+            <h2 className="text-2xl text-ink-900">{t('Invitar amigos')}</h2>
             <p className="text-sm text-ink-500">
               {t('Quien abra el enlace elige su nombre y entra en {group} con su Freighter.', { group: groupName })}
             </p>
           </div>
-          <button onClick={onClose} disabled={busy} className="rounded-lg p-1 text-ink-400 hover:bg-ink-100" aria-label={t('Cerrar')}>
-            ✕
+          <button onClick={onClose} disabled={busy} className="-mt-1 -mr-2 inline-flex h-11 w-11 shrink-0 items-center justify-center text-ink-500 hover:bg-ink-100 hover:text-ink-900" aria-label={t('Cerrar')}>
+            <Icon name="close" className="h-5 w-5" />
           </button>
         </div>
 
         <div>
-          <div className="text-xs font-semibold uppercase tracking-wide text-ink-500">{t('Faltan por unirse')}</div>
+          <h3 className="font-sans text-sm font-semibold tracking-normal text-ink-900">{t('Faltan por unirse')}</h3>
           <div className="mt-1 flex flex-wrap gap-1.5">
             {pending.length === 0 && <span className="text-sm text-ink-400">{t('Nadie. Añade nombres o comparte el enlace tal cual.')}</span>}
             {pending.map((n) => (
-              <span key={n} className="flex items-center gap-1 rounded-full bg-brand-50 py-1 pr-1.5 pl-3 text-sm font-semibold text-brand-800">
+              <span key={n} className="flex items-center gap-1 bg-brand-50 py-1 pr-1 pl-3 text-sm font-semibold text-brand-800 ring-1 ring-brand-300">
                 {n}
                 <button
                   type="button"
                   onClick={() => updatePending(pending.filter((p) => p !== n))}
-                  className="rounded-full px-1 text-brand-600 hover:bg-brand-100"
+                  className="inline-flex h-8 w-8 items-center justify-center text-brand-700 hover:bg-brand-100"
                   aria-label={t('Quitar {name}', { name: n })}
                 >
-                  ✕
+                  <Icon name="close" className="h-3.5 w-3.5" />
                 </button>
               </span>
             ))}
@@ -124,7 +124,7 @@ export function InviteModal({
               onChange={(e) => setNewName(e.target.value)}
               maxLength={24}
               placeholder={t('Añadir nombre')}
-              className="min-w-0 flex-1 rounded-xl border border-ink-200 px-3 py-1.5 text-sm"
+              className="field min-w-0 flex-1 text-sm"
             />
             <Button type="submit" variant="secondary" className="py-1.5!" disabled={!newName.trim()}>
               {t('Añadir')}
@@ -134,15 +134,15 @@ export function InviteModal({
 
         {invite ? (
           <>
-            <div className="flex justify-center rounded-xl bg-ink-50 p-4">
-              <QRCodeSVG value={link} size={196} fgColor="#15132e" bgColor="transparent" marginSize={0} />
+            <div className="flex justify-center bg-qr p-4 ring-1 ring-ink-200">
+              <QRCodeSVG value={link} size={196} fgColor="#0f0f0f" bgColor="transparent" marginSize={0} />
             </div>
             <div className="flex gap-2">
               <input
                 readOnly
                 value={link}
                 onFocus={(e) => e.currentTarget.select()}
-                className="min-w-0 flex-1 rounded-xl border border-ink-200 px-3 py-2 font-mono text-xs"
+                className="field key min-w-0 flex-1 text-xs"
               />
               <Button onClick={copy}>{copied ? t('¡Copiado!') : t('Copiar')}</Button>
             </div>

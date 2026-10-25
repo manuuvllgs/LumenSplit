@@ -42,13 +42,13 @@ export default function GroupDetail() {
   const unsettled = Object.values(balances).some((b) => b !== 0n)
 
   return (
-    <div className="space-y-5">
+    <div>
       <PageHeader
         title={group.name}
         back="/"
         right={
-          <Button variant="ghost" onClick={() => setInviting(true)}>
-            {t('+ Invitar')}
+          <Button variant="secondary" onClick={() => setInviting(true)} className="hidden sm:inline-flex">
+            {t('Invitar amigos')}
           </Button>
         }
       />
@@ -65,97 +65,124 @@ export default function GroupDetail() {
         />
       )}
 
-      <Card className="bg-ink-900! text-white ring-0!">
-        <div className="text-sm opacity-80">{t('Tu saldo')}</div>
-        <div className="mt-1 font-display text-4xl font-bold tabular-nums">
-          {mine === 0n ? t('Estás en paz') : <Amount value={mine} signed className={mine > 0n ? 'text-[#4ade80]!' : 'text-[#ff8a80]!'} />}
-        </div>
-        <div className="mt-1 text-sm opacity-80">
-          {mine > 0n ? t('Te deben dinero') : mine < 0n ? t('Debes dinero') : t('No debes nada')} · {t('Gasto total')}{' '}
-          <Amount value={total} className="text-white! font-normal!" />
-        </div>
-      </Card>
-
-      <div className="grid grid-cols-2 gap-3">
-        <Link to={`/g/${id}/expense`}>
-          <Button className="w-full">{t('+ Añadir gasto')}</Button>
-        </Link>
-        {unsettled ? (
-          <Link to={`/g/${id}/settle`}>
-            <Button variant="accent" className="w-full">
-              {t('Saldar cuentas')}
-            </Button>
-          </Link>
-        ) : (
-          <Button variant="secondary" className="w-full" disabled>
-            {t('Todo saldado')}
-          </Button>
-        )}
-      </div>
-
-      <section>
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-500">{t('Saldos')}</h2>
-          <button onClick={() => setInviting(true)} className="text-sm font-semibold text-brand-700 hover:underline">
-            {t('Invitar amigos')}
-          </button>
-        </div>
-        <Card className="divide-y divide-ink-100 p-0">
-          {group.members.map((m) => (
-            <div key={m} className="flex items-center gap-3 px-4 py-3">
-              <Avatar address={m} />
-              <div className="min-w-0 flex-1">
-                <MemberName address={m} me={me} editable />
+      <div className="grid gap-6 lg:grid-cols-12 lg:items-start lg:gap-8">
+        <div className="space-y-6 lg:sticky lg:top-24 lg:col-span-5">
+          {/* The balance: Dusk slate, the figure set big */}
+          <section className="rounded-2xl bg-shade p-5 text-on-shade sm:p-6" aria-label={t('Tu saldo')}>
+            <p className="text-sm text-on-shade-muted">{t('Tu saldo')}</p>
+            <p className="mt-1 font-display text-4xl font-semibold sm:text-5xl">
+              {mine === 0n ? (
+                t('Estás en paz')
+              ) : (
+                <Amount value={mine} signed className={mine > 0n ? 'text-pos-on-shade!' : 'text-neg-on-shade!'} />
+              )}
+            </p>
+            <dl className="mt-4 grid grid-cols-2 gap-4 border-t border-shade-rule pt-4 text-sm">
+              <div>
+                <dt className="text-on-shade-muted">{mine > 0n ? t('Te deben dinero') : mine < 0n ? t('Debes dinero') : t('No debes nada')}</dt>
               </div>
-              <Amount value={balances[m] ?? 0n} signed />
+              <div className="text-right">
+                <dt className="text-on-shade-muted">{t('Gasto total')}</dt>
+                <dd className="mt-0.5">
+                  <Amount value={total} className="text-on-shade!" />
+                </dd>
+              </div>
+            </dl>
+          </section>
+
+          <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2">
+            <Link to={`/g/${id}/expense`} className="btn btn-ink">
+              {t('+ Añadir gasto').replace(/^\+\s*/, '')}
+            </Link>
+            {unsettled ? (
+              <Link to={`/g/${id}/settle`} className="btn btn-gold">
+                {t('Saldar cuentas')}
+              </Link>
+            ) : (
+              <Button variant="secondary" disabled>
+                {t('Todo saldado')}
+              </Button>
+            )}
+          </div>
+
+          <section>
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <h2 className="text-lg text-ink-900">{t('Saldos')}</h2>
+              <Button variant="ghost" onClick={() => setInviting(true)} className="sm:hidden">
+                {t('Invitar amigos')}
+              </Button>
             </div>
-          ))}
-          {group.members.length === 1 && (
-            <button
-              onClick={() => setInviting(true)}
-              className="w-full px-4 py-4 text-sm font-semibold text-brand-700 hover:bg-brand-50"
-            >
-              {t('Estás solo en el grupo. Invita a tus amigos con un enlace o QR →')}
-            </button>
-          )}
-        </Card>
-      </section>
-
-      <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-ink-500">{t('Gastos')}</h2>
-        {expenses.length === 0 ? (
-          <Card className="py-8 text-center text-ink-500">{t('Todavía no hay gastos.')}</Card>
-        ) : (
-          <Card className="divide-y divide-ink-100 p-0">
-            {[...expenses].reverse().map((e, i) => (
-              <div key={i} className="flex items-center gap-3 px-4 py-3">
-                <Avatar address={e.payer} />
-                <div className="min-w-0 flex-1">
-                  <div className="truncate font-medium">{e.description}</div>
-                  <div className="text-xs text-ink-500">
-                    {t('Pagó')} <b className="text-ink-900">{e.payer === me ? t('tú') : name(e.payer)}</b> · {e.participants.length}{' '}
-                    {t('personas')} · {formatDate(e.timestamp)}
+            <Card className="divide-y divide-ink-200 p-0! sm:p-0!">
+              {group.members.map((m) => (
+                <div key={m} className="flex items-center gap-3 px-4 py-3">
+                  <Avatar address={m} />
+                  <div className="min-w-0 flex-1">
+                    <MemberName address={m} me={me} editable />
                   </div>
-                  <KeyHint address={e.payer} />
-                  {isCustomSplit(e) && (
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      {e.participants.map((p, j) => (
-                        <span key={p} title={p} className="flex flex-col rounded-lg bg-ink-100 px-2 py-0.5 text-[11px] text-ink-700">
-                          <span>
-                            <b className="text-ink-900">{p === me ? t('Tú') : name(p)}</b> {formatAmount(e.shares![j], false, 2)}
-                          </span>
-                          <KeyHint address={p} className="text-[10px]" />
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                  <Amount value={balances[m] ?? 0n} signed className="shrink-0" />
                 </div>
-                <Amount value={e.amount} />
-              </div>
-            ))}
-          </Card>
-        )}
-      </section>
+              ))}
+              {group.members.length === 1 && (
+                <button
+                  onClick={() => setInviting(true)}
+                  className="w-full px-4 py-4 text-left text-sm font-semibold text-brand-700 underline underline-offset-2 hover:bg-brand-50"
+                >
+                  {t('Estás solo en el grupo. Invita a tus amigos con un enlace o QR →')}
+                </button>
+              )}
+            </Card>
+          </section>
+        </div>
+
+        <section className="lg:col-span-7">
+          <h2 className="mb-3 text-lg text-ink-900">{t('Gastos')}</h2>
+          {expenses.length === 0 ? (
+            <Card className="py-12 text-center">
+              <p className="text-ink-500">{t('Todavía no hay gastos.')}</p>
+              <Link to={`/g/${id}/expense`} className="btn btn-frame mt-5">
+                {t('+ Añadir gasto').replace(/^\+\s*/, '')}
+              </Link>
+            </Card>
+          ) : (
+            <Card className="divide-y divide-ink-200 p-0! sm:p-0!">
+              {[...expenses].reverse().map((e, i) => (
+                <article key={i} className="flex gap-3 px-4 py-4 sm:px-5">
+                  <Avatar address={e.payer} />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-3">
+                      <h3 className="min-w-0 truncate font-sans text-base font-semibold tracking-normal text-ink-900">{e.description}</h3>
+                      <Amount value={e.amount} className="shrink-0" />
+                    </div>
+                    <p className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-ink-500">
+                      <span>
+                        {t('Pagó')} <b className="font-semibold text-ink-900">{e.payer === me ? t('tú') : name(e.payer)}</b>
+                      </span>
+                      <span>
+                        {e.participants.length} {t('personas')}
+                      </span>
+                      <span>{formatDate(e.timestamp)}</span>
+                    </p>
+                    <KeyHint address={e.payer} />
+                    {isCustomSplit(e) && (
+                      <ul className="mt-2 flex flex-wrap gap-1.5">
+                        {e.participants.map((p, j) => (
+                          <li key={p} title={p} className="flex flex-col bg-ink-100 px-2 py-1 text-[11px] text-ink-700">
+                            <span>
+                              <b className="font-semibold text-ink-900">{p === me ? t('Tú') : name(p)}</b>{' '}
+                              <span className="figure">{formatAmount(e.shares![j], false, 2)}</span>
+                            </span>
+                            <KeyHint address={p} className="text-[10px]" />
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </article>
+              ))}
+            </Card>
+          )}
+        </section>
+      </div>
     </div>
   )
 }

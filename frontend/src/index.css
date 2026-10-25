@@ -1,48 +1,376 @@
+/* Hallmark · v2.0.0 · redesign: full · shape: app screen · theme: dusk (by request) + broadside controls (by request) · brand: HackMeridian (spec 2026-10-25) · modes: light+dark · genre: modern-minimal */
+/* Critique: money between friends should feel calm and exact; Dusk's slate and bone carry the trust, HackMeridian's gold is rationed to the one thing that moves money, Broadside's square blocks make every action unmistakable. */
+/* waive 37 · four families: Archivo Narrow is the Broadside control face (by request), IBM Plex Mono is the material (keys, hashes); Wix Madefor Display/Text are one superfamily · answered 67 · Broadside capitals are only legal under an uppercase display, so its controls keep the square 48px block, Archivo Narrow 600 and the double-rule frame in sentence case */
+/* waive 1 (flags, QR) · LanguagePicker flags are national colours and the QR ink is fixed #0f0f0f for scanning, not theme colour */
 @import 'tailwindcss';
 
-/* Design tokens from docs/brand/tokens.css (person 3). Retune the whole app from here. */
-@theme {
-  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+/*
+ * One token system, two renderings (light = Dusk "day" wells, dark = Dusk night).
+ * Brand values from HackMeridian's own CSS: ink #0f0f0f, white, gold #fdda24.
+ * Every colour below the token blocks goes through these variables.
+ */
+:root {
+  color-scheme: light;
 
-  /* primary */
-  --color-brand-50: #f5f4ff;
-  --color-brand-100: #eeecff;
-  --color-brand-300: #b3abff;
-  --color-brand-600: #5b4bff;
-  --color-brand-700: #4a3be6;
-  --color-brand-800: #3527b8;
+  --paper: oklch(96.4% 0.006 85); /* bone ground */
+  --surface: oklch(99.6% 0.002 85); /* cards */
+  --surface-2: oklch(93.6% 0.008 80); /* wells, inputs, segmented */
+  --rule: oklch(86.5% 0.009 78);
+  --rule-strong: oklch(60% 0.01 75);
+  --ink: oklch(19% 0.004 75); /* ≈ #0f0f0f, never pure black */
+  --ink-2: oklch(33% 0.008 75);
+  --muted: oklch(46% 0.012 265);
+  --muted-2: oklch(58% 0.012 265);
 
-  /* accent: the "lumen" — Settle up / Pay */
-  --color-accent-50: #fff4d6;
-  --color-accent-400: #ffc23d;
-  --color-accent-500: #f5b21c;
+  /* HackMeridian gold: the one signal that moves money */
+  --gold: #fdda24;
+  --gold-hover: oklch(84% 0.17 95);
+  --gold-soft: oklch(95% 0.07 98);
+  --on-gold: oklch(19% 0.004 75);
+  --gold-text: oklch(52% 0.11 88); /* gold that reads as text on light */
 
-  --color-ink-50: #f7f7fb;
-  --color-ink-100: #efeff5;
-  --color-ink-200: #e4e4ee;
-  --color-ink-400: #98a2b3;
-  --color-ink-500: #667085;
-  --color-ink-700: #344054;
-  --color-ink-900: #15132e;
+  /* Dusk periwinkle: selection, info, chain links */
+  --sel: oklch(46% 0.14 274);
+  --sel-strong: oklch(38% 0.14 274);
+  --sel-soft: oklch(94% 0.03 274);
+  --sel-soft-2: oklch(90% 0.045 274);
+  --sel-rule: oklch(78% 0.07 274);
+  --sel-ink: oklch(32% 0.12 274);
+  --on-sel: oklch(98.5% 0.004 274);
 
-  --color-pos-50: #e7f8ef;
-  --color-pos-600: #067647;
-  --color-pos-700: #055c37;
+  /* Dusk slate band: the balance card, the footer */
+  --shade: oklch(19% 0.014 268);
+  --shade-2: oklch(24% 0.016 268);
+  --on-shade: oklch(96% 0.006 75);
+  --on-shade-muted: oklch(76% 0.014 262);
+  --shade-rule: oklch(32% 0.016 266);
 
-  --color-neg-50: #feeceb;
-  --color-neg-600: #d92d20;
-  --color-neg-700: #b42318;
+  --pos: oklch(50% 0.12 155);
+  --pos-strong: oklch(42% 0.11 155);
+  --pos-soft: oklch(95% 0.04 155);
+  --neg: oklch(53% 0.18 27);
+  --neg-strong: oklch(46% 0.17 27);
+  --neg-soft: oklch(95.5% 0.03 27);
+  --pos-on-shade: oklch(80% 0.14 155);
+  --neg-on-shade: oklch(76% 0.13 27);
 
-  --radius-2xl: 16px;
-  --shadow-sm: 0 1px 2px rgba(21, 19, 46, 0.06), 0 4px 16px rgba(21, 19, 46, 0.06);
+  --focus: oklch(46% 0.14 274);
+  --qr-bg: oklch(99.5% 0.002 85); /* QR stays dark-on-light in both modes so phones can scan it */
+  --scrim: oklch(19% 0.014 268 / 0.55);
+  --shadow-card: 0 1px 2px oklch(19% 0.014 268 / 0.05), 0 12px 32px -18px oklch(19% 0.014 268 / 0.22);
+
+  /* Avatar tints: soft wells with ink letters, same in spirit in both modes */
+  --av-1: oklch(88% 0.06 274);
+  --av-2: oklch(90% 0.09 96);
+  --av-3: oklch(88% 0.06 155);
+  --av-4: oklch(88% 0.06 27);
+  --av-5: oklch(88% 0.05 220);
+  --av-6: oklch(88% 0.05 330);
+  --on-av: oklch(22% 0.02 268);
+
+  --font-display: 'Wix Madefor Display', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Wix Madefor Text', ui-sans-serif, system-ui, sans-serif;
+  --font-control: 'Archivo Narrow', 'Wix Madefor Text', ui-sans-serif, sans-serif;
+  --font-key: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --body-weight: 400;
+}
+
+/* Dark: Dusk night, re-derived per token; the hues never move. */
+[data-mode='dark'] {
+  color-scheme: dark;
+  --paper: oklch(17.5% 0.014 268);
+  --surface: oklch(21% 0.016 268);
+  --surface-2: oklch(25% 0.017 268);
+  --rule: oklch(31% 0.016 266);
+  --rule-strong: oklch(56% 0.016 266);
+  --ink: oklch(95.5% 0.006 75);
+  --ink-2: oklch(86% 0.01 262);
+  --muted: oklch(72% 0.016 262);
+  --muted-2: oklch(62% 0.016 262);
+
+  --gold: oklch(88% 0.155 96);
+  --gold-hover: oklch(92% 0.13 97);
+  --gold-soft: oklch(30% 0.05 95);
+  --on-gold: oklch(19% 0.014 268);
+  --gold-text: oklch(88% 0.155 96);
+
+  --sel: oklch(78% 0.1 274);
+  --sel-strong: oklch(85% 0.08 274);
+  --sel-soft: oklch(27% 0.04 274);
+  --sel-soft-2: oklch(31% 0.05 274);
+  --sel-rule: oklch(45% 0.07 274);
+  --sel-ink: oklch(88% 0.06 274);
+  --on-sel: oklch(19% 0.035 274);
+
+  --shade: oklch(24% 0.018 268); /* a lighter well than the night, never a hole */
+  --shade-2: oklch(28% 0.02 268);
+  --shade-rule: oklch(36% 0.018 266);
+
+  --pos: oklch(78% 0.13 155);
+  --pos-strong: oklch(84% 0.11 155);
+  --pos-soft: oklch(27% 0.04 155);
+  --neg: oklch(74% 0.14 27);
+  --neg-strong: oklch(81% 0.11 27);
+  --neg-soft: oklch(27% 0.04 27);
+
+  --focus: oklch(80% 0.1 274);
+  --scrim: oklch(10% 0.02 268 / 0.7);
+  --shadow-card: inset 0 0 0 1px var(--rule);
+  --body-weight: 350;
+  --av-1: oklch(40% 0.08 274);
+  --av-2: oklch(42% 0.08 96);
+  --av-3: oklch(40% 0.07 155);
+  --av-4: oklch(40% 0.08 27);
+  --av-5: oklch(40% 0.06 220);
+  --av-6: oklch(40% 0.07 330);
+  --on-av: oklch(95% 0.006 75);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-mode]) {
+    color-scheme: dark;
+    --paper: oklch(17.5% 0.014 268);
+    --surface: oklch(21% 0.016 268);
+    --surface-2: oklch(25% 0.017 268);
+    --rule: oklch(31% 0.016 266);
+    --rule-strong: oklch(56% 0.016 266);
+    --ink: oklch(95.5% 0.006 75);
+    --ink-2: oklch(86% 0.01 262);
+    --muted: oklch(72% 0.016 262);
+    --muted-2: oklch(62% 0.016 262);
+    --gold: oklch(88% 0.155 96);
+    --gold-hover: oklch(92% 0.13 97);
+    --gold-soft: oklch(30% 0.05 95);
+    --on-gold: oklch(19% 0.014 268);
+    --gold-text: oklch(88% 0.155 96);
+    --sel: oklch(78% 0.1 274);
+    --sel-strong: oklch(85% 0.08 274);
+    --sel-soft: oklch(27% 0.04 274);
+    --sel-soft-2: oklch(31% 0.05 274);
+    --sel-rule: oklch(45% 0.07 274);
+    --sel-ink: oklch(88% 0.06 274);
+    --on-sel: oklch(19% 0.035 274);
+    --shade: oklch(24% 0.018 268);
+    --shade-2: oklch(28% 0.02 268);
+    --shade-rule: oklch(36% 0.018 266);
+    --pos: oklch(78% 0.13 155);
+    --pos-strong: oklch(84% 0.11 155);
+    --pos-soft: oklch(27% 0.04 155);
+    --neg: oklch(74% 0.14 27);
+    --neg-strong: oklch(81% 0.11 27);
+    --neg-soft: oklch(27% 0.04 27);
+    --focus: oklch(80% 0.1 274);
+    --scrim: oklch(10% 0.02 268 / 0.7);
+    --shadow-card: inset 0 0 0 1px var(--rule);
+    --body-weight: 350;
+    --av-1: oklch(40% 0.08 274);
+    --av-2: oklch(42% 0.08 96);
+    --av-3: oklch(40% 0.07 155);
+    --av-4: oklch(40% 0.08 27);
+    --av-5: oklch(40% 0.06 220);
+    --av-6: oklch(40% 0.07 330);
+    --on-av: oklch(95% 0.006 75);
+  }
+}
+
+/* Tailwind names → tokens, resolved at runtime so the mode switch repaints everything. */
+@theme inline {
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+  --font-control: var(--font-control);
+  --font-mono: var(--font-key);
+
+  --color-ink-50: var(--paper);
+  --color-ink-100: var(--surface-2);
+  --color-ink-200: var(--rule);
+  --color-ink-300: var(--rule-strong);
+  --color-ink-400: var(--muted-2);
+  --color-ink-500: var(--muted);
+  --color-ink-700: var(--ink-2);
+  --color-ink-900: var(--ink);
+  --color-surface: var(--surface);
+
+  --color-brand-50: var(--sel-soft);
+  --color-brand-100: var(--sel-soft-2);
+  --color-brand-300: var(--sel-rule);
+  --color-brand-600: var(--sel);
+  --color-brand-700: var(--sel-strong);
+  --color-brand-800: var(--sel-ink);
+  --color-on-brand: var(--on-sel);
+
+  --color-accent-50: var(--gold-soft);
+  --color-accent-400: var(--gold);
+  --color-accent-500: var(--gold-hover);
+  --color-accent-text: var(--gold-text);
+  --color-on-accent: var(--on-gold);
+
+  --color-shade: var(--shade);
+  --color-shade-2: var(--shade-2);
+  --color-shade-rule: var(--shade-rule);
+  --color-on-shade: var(--on-shade);
+  --color-on-shade-muted: var(--on-shade-muted);
+  --color-pos-on-shade: var(--pos-on-shade);
+  --color-neg-on-shade: var(--neg-on-shade);
+
+  --color-pos-50: var(--pos-soft);
+  --color-pos-600: var(--pos);
+  --color-pos-700: var(--pos-strong);
+  --color-neg-50: var(--neg-soft);
+  --color-neg-600: var(--neg);
+  --color-neg-700: var(--neg-strong);
+
+  --color-scrim: var(--scrim);
+  --color-qr: var(--qr-bg);
+  --color-focus: var(--focus);
+
+  --radius-2xl: 18px; /* Dusk card */
+  --radius-xl: 10px; /* Dusk inner */
+  --shadow-sm: var(--shadow-card);
+}
+
+html,
+body {
+  overflow-x: clip;
 }
 
 body {
-  @apply bg-ink-50 font-sans text-ink-900 antialiased;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-weight: var(--body-weight);
+  -webkit-font-smoothing: antialiased;
 }
 
 h1,
-h2 {
-  @apply font-display;
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+
+/* Every interactive element shows focus at once (no transition on the ring). */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@layer components {
+  /* Broadside controls: square blocks, Archivo Narrow 600, sentence case (our display is not uppercase). */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 48px;
+    padding: 0 1.25rem;
+    border-radius: 0;
+    font-family: var(--font-control);
+    font-weight: 600;
+    font-size: 1.0625rem;
+    letter-spacing: 0;
+    white-space: nowrap;
+    transition-property: background-color, color, border-color, transform;
+    transition-duration: 120ms;
+  }
+  .btn:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+  .btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+  .btn-ink {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .btn-gold {
+    background: var(--gold);
+    color: var(--on-gold);
+  }
+  .btn-frame {
+    background: transparent;
+    color: var(--ink);
+    border: 3px double var(--ink);
+  }
+  .btn-text {
+    min-height: 44px;
+    padding: 0 0.25rem;
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+  }
+  @media (hover: hover) {
+    .btn-ink:hover:not(:disabled) {
+      background: var(--ink-2);
+    }
+    .btn-gold:hover:not(:disabled) {
+      background: var(--gold-hover);
+    }
+    .btn-frame:hover:not(:disabled) {
+      background: var(--surface-2);
+    }
+    .btn-text:hover:not(:disabled) {
+      text-decoration-thickness: 2px;
+    }
+  }
+  @media (pointer: coarse) {
+    .btn {
+      min-height: 50px;
+    }
+  }
+
+  /* Inputs follow the controls: square, 48px, a 1px rule that turns ink on focus. */
+  .field {
+    min-height: 48px;
+    width: 100%;
+    border-radius: 0;
+    border: 1px solid var(--rule-strong);
+    background: var(--surface);
+    color: var(--ink);
+    padding: 0 0.875rem;
+    transition-property: border-color;
+    transition-duration: 120ms;
+  }
+  .field::placeholder {
+    color: var(--muted-2);
+  }
+  .field:focus {
+    border-color: var(--ink);
+    outline: none;
+  }
+  .field:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 1px;
+  }
+
+  /* Keys and hashes: the chain, set in HackMeridian's mono. */
+  .key {
+    font-family: var(--font-key);
+    font-feature-settings: 'zero' 1;
+  }
+
+  .figure {
+    font-family: var(--font-display);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1.5s !important;
+    animation-iteration-count: infinite;
+    transition-duration: 0.01ms !important;
+  }
+  .btn:active:not(:disabled) {
+    transform: none;
+  }
 }

@@ -5,7 +5,7 @@ import { publishMyNameIfNeeded, setHint, setPendingNames, useNames } from '../li
 import { isValidAddress } from '../lib/format'
 import { useWallet } from '../wallet'
 import { useTx } from '../useTx'
-import { Button, Card, KeyHint, PageHeader, TxStatus } from '../components/ui'
+import { Button, Card, Icon, KeyHint, PageHeader, TxStatus } from '../components/ui'
 import { t } from '../i18n'
 
 interface Row {
@@ -57,9 +57,9 @@ export default function NewGroup() {
   }
 
   return (
-    <form onSubmit={submit}>
+    <form onSubmit={submit} className="mx-auto max-w-2xl">
       <PageHeader title={t('Nuevo grupo')} back="/" />
-      <Card className="space-y-4">
+      <Card className="space-y-6">
         <label className="block">
           <span className="text-sm font-medium text-ink-700">{t('Nombre del grupo')}</span>
           <input
@@ -67,41 +67,41 @@ export default function NewGroup() {
             onChange={(e) => setGroupName(e.target.value)}
             placeholder={t('Viaje a Lisboa')}
             maxLength={40}
-            className="mt-1 w-full rounded-xl border border-ink-200 px-3 py-2.5 focus:border-brand-600 focus:outline-none"
+            className="field mt-1"
           />
         </label>
 
         <div>
           <span className="text-sm font-medium text-ink-700">{t('¿Quiénes participáis?')}</span>
-          <div className="mt-1 flex items-center justify-between rounded-xl bg-ink-50 px-3 py-2 text-sm">
+          <div className="mt-1 flex items-center justify-between gap-3 bg-ink-100 px-3.5 py-3 text-sm">
             <span className="flex flex-col leading-tight">
               <b className="text-ink-900">{(me && names[me]) || t('Tú')}</b>
               {me && <KeyHint address={me} />}
             </span>
-            <span className="text-xs text-ink-500">{t('creador')}</span>
+            <span className="shrink-0 bg-accent-400 px-1.5 py-px font-control text-[11px] font-semibold text-on-accent">{t('creador')}</span>
           </div>
           <div className="mt-2 space-y-2">
             {rows.map((r, i) => {
               const bad = r.address.trim() && !isValidAddress(r.address)
               return (
-                <div key={i} className="rounded-xl ring-1 ring-ink-100">
-                  <div className="flex items-center gap-2 px-3 pt-2">
+                <div key={i} className="border border-ink-300 focus-within:border-ink-900">
+                  <div className="flex items-center gap-2 px-3.5 pt-2">
                     <input
                       value={r.name}
                       onChange={(e) => update(i, { name: e.target.value })}
                       placeholder={['Ana', 'Ben', 'Carla', 'Dani'][i % 4]}
                       maxLength={24}
                       aria-label={t('Nombre del participante')}
-                      className="min-w-0 flex-1 bg-transparent py-1 font-semibold text-ink-900 focus:outline-none"
+                      className="min-h-10 min-w-0 flex-1 bg-transparent font-semibold text-ink-900 placeholder:text-ink-400 focus:outline-none"
                     />
                     {rows.length > 1 && (
                       <button
                         type="button"
                         onClick={() => setRows((rs) => rs.filter((_, j) => j !== i))}
-                        className="px-1 text-ink-400 hover:text-neg-600"
+                        className="-mr-2 inline-flex h-10 w-10 items-center justify-center text-ink-500 hover:text-neg-600"
                         aria-label={t('Quitar')}
                       >
-                        ✕
+                        <Icon name="close" />
                       </button>
                     )}
                   </div>
@@ -111,8 +111,8 @@ export default function NewGroup() {
                     placeholder={t('Dirección G… (opcional, si no, se une con el enlace)')}
                     spellCheck={false}
                     aria-label={t('Dirección Stellar (opcional)')}
-                    className={`w-full rounded-b-xl bg-transparent px-3 pb-2 font-mono text-[11px] focus:outline-none ${
-                      bad ? 'text-neg-600' : 'text-ink-400'
+                    className={`min-h-9 w-full bg-transparent px-3.5 pb-2 key text-[11px] placeholder:text-ink-400 focus:outline-none ${
+                      bad ? 'text-neg-600' : 'text-ink-500'
                     }`}
                   />
                 </div>
@@ -132,14 +132,14 @@ export default function NewGroup() {
         </div>
       </Card>
 
-      <div className="mt-4 space-y-3">
+      <div className="mt-5 space-y-3">
         <TxStatus state={state} successText={t('Grupo creado')} />
         {sharing && (
-          <div className="rounded-xl bg-brand-50 p-3 text-sm text-brand-800">
+          <div role="status" className="border-l-4 border-brand-600 bg-brand-50 px-3 py-2.5 text-sm text-brand-800">
             {t('Compartiendo tu nombre con el grupo (firma en Freighter, opcional)…')}
           </div>
         )}
-        <Button type="submit" className="w-full py-3" disabled={!canSubmit} loading={busy}>
+        <Button type="submit" className="w-full" disabled={!canSubmit} loading={busy}>
           {t('Crear grupo')}
         </Button>
       </div>

@@ -82,9 +82,9 @@ export default function AddExpense() {
   }
 
   return (
-    <form onSubmit={submit}>
+    <form onSubmit={submit} className="mx-auto max-w-2xl">
       <PageHeader title={t('Añadir gasto')} back={`/g/${id}`} />
-      <Card className="space-y-4">
+      <Card className="space-y-6">
         <label className="block">
           <span className="text-sm font-medium text-ink-700">{t('Descripción')}</span>
           <input
@@ -92,11 +92,11 @@ export default function AddExpense() {
             onChange={(e) => setDescription(e.target.value)}
             placeholder={t('Cena, taxi, entradas…')}
             maxLength={60}
-            className="mt-1 w-full rounded-xl border border-ink-200 px-3 py-2.5 focus:border-brand-600 focus:outline-none"
+            className="field mt-1"
           />
         </label>
 
-        <div role="radiogroup" aria-label={t('Tipo de reparto')} className="grid grid-cols-2 gap-1 rounded-xl bg-ink-100 p-1">
+        <div role="radiogroup" aria-label={t('Tipo de reparto')} className="grid grid-cols-2 border border-ink-900">
           {(
             [
               ['equal', 'A partes iguales'],
@@ -109,8 +109,8 @@ export default function AddExpense() {
               role="radio"
               aria-checked={mode === m}
               onClick={() => switchMode(m)}
-              className={`rounded-lg py-2 text-sm font-semibold transition ${
-                mode === m ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-500 hover:text-ink-700'
+              className={`min-h-12 px-2 font-control text-base font-semibold ${
+                mode === m ? 'bg-ink-900 text-ink-50' : 'text-ink-700 hover:bg-ink-100'
               }`}
             >
               {t(text)}
@@ -121,28 +121,28 @@ export default function AddExpense() {
         {mode === 'equal' ? (
           <label className="block">
             <span className="text-sm font-medium text-ink-700">{t('Importe')}</span>
-            <div className="mt-1 flex items-center rounded-xl border border-ink-200 focus-within:border-brand-600">
+            <div className="field mt-1 flex items-center px-0! focus-within:border-ink-900">
               <input
                 value={amountStr}
                 onChange={(e) => setAmountStr(e.target.value)}
                 inputMode="decimal"
                 placeholder="0,00"
-                className="min-w-0 flex-1 rounded-xl px-3 py-2.5 text-lg font-semibold tabular-nums focus:outline-none"
+                className="figure min-h-14 min-w-0 flex-1 bg-transparent px-3.5 text-2xl focus:outline-none"
               />
-              <span className="pr-3 text-sm font-semibold text-ink-500">{TOKEN_SYMBOL}</span>
+              <span className="key pr-3.5 text-sm text-ink-500">{TOKEN_SYMBOL}</span>
             </div>
             {amountStr && !amount && <p className="mt-1 text-xs text-neg-600">{t('Importe no válido (máx. 7 decimales).')}</p>}
           </label>
         ) : (
-          <div className="flex items-baseline justify-between rounded-xl bg-ink-50 px-3 py-2.5">
+          <div className="flex items-baseline justify-between border-y border-ink-900 py-3">
             <span className="text-sm font-medium text-ink-700">{t('Total')}</span>
-            <span className="font-display text-lg font-bold tabular-nums">{formatAmount(customTotal)}</span>
+            <span className="figure text-2xl text-ink-900">{formatAmount(customTotal)}</span>
           </div>
         )}
 
         <div>
           <span className="text-sm font-medium text-ink-700">{t('Pagado por')}</span>
-          <div className="mt-1 rounded-xl bg-ink-50 px-3 py-2 text-sm font-medium">{t('Tú')}</div>
+          <div className="mt-1 bg-ink-100 px-3.5 py-3 text-sm font-semibold text-ink-900">{t('Tú')}</div>
         </div>
 
         <div>
@@ -152,28 +152,28 @@ export default function AddExpense() {
             </span>
             <button
               type="button"
-              className="text-xs font-semibold text-brand-700"
+              className="btn btn-text text-xs!"
               onClick={() => setSelected(selected.size === group.members.length ? new Set() : new Set(group.members))}
             >
               {selected.size === group.members.length ? t('Ninguno') : t('Todos')}
             </button>
           </div>
-          <div className="mt-1 divide-y divide-ink-100 rounded-xl ring-1 ring-ink-100">
+          <div className="mt-1 divide-y divide-ink-200 border border-ink-200">
             {group.members.map((m) => {
               const on = selected.has(m)
               const raw = custom[m] ?? ''
               const bad = mode === 'custom' && on && raw.trim() !== '' && parseAmount(raw) === null
               return (
-                <div key={m} className="flex items-center gap-3 px-3 py-2.5">
+                <div key={m} className="flex flex-wrap items-center gap-3 px-3 py-3 sm:flex-nowrap">
                   <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-3">
-                    <input type="checkbox" checked={on} onChange={() => toggle(m)} className="h-4 w-4 accent-brand-600" />
+                    <input type="checkbox" checked={on} onChange={() => toggle(m)} className="h-5 w-5 accent-ink-900" />
                     <Avatar address={m} />
                     <div className="min-w-0 flex-1">
                       <MemberName address={m} me={me} />
                     </div>
                   </label>
                   {mode === 'equal' && on && share !== null && (
-                    <span className="text-sm tabular-nums text-ink-500">≈ {formatAmount(share, true, 2)}</span>
+                    <span className="figure text-sm text-ink-500">≈ {formatAmount(share, true, 2)}</span>
                   )}
                   {mode === 'custom' && on && (
                     <input
@@ -182,9 +182,7 @@ export default function AddExpense() {
                       inputMode="decimal"
                       placeholder="0,00"
                       aria-label={t('Importe de esta persona')}
-                      className={`w-24 rounded-lg border px-2 py-1.5 text-right text-sm font-semibold tabular-nums focus:outline-none ${
-                        bad ? 'border-neg-600' : 'border-ink-200 focus:border-brand-600'
-                      }`}
+                      className={`field figure ml-auto w-28 text-right text-base ${bad ? 'border-neg-600!' : ''}`}
                     />
                   )}
                 </div>
@@ -196,9 +194,9 @@ export default function AddExpense() {
           )}
         </div>
       </Card>
-      <div className="mt-4 space-y-3">
+      <div className="mt-5 space-y-3">
         <TxStatus state={state} successText={t('Gasto añadido')} />
-        <Button type="submit" className="w-full py-3" disabled={!canSubmit} loading={busy}>
+        <Button type="submit" className="w-full" disabled={!canSubmit} loading={busy}>
           {t('Guardar gasto')}{mode === 'custom' && customValid ? ` · ${formatAmount(customTotal)}` : ''}
         </Button>
       </div>
