@@ -5,7 +5,7 @@ function Flag({ lang }: { lang: Lang }) {
   const common = { width: 20, height: 20, viewBox: '0 0 20 20', 'aria-hidden': true } as const
   const clip = `flag-${lang}`
   return (
-    <svg {...common}>
+    <svg {...common} aria-hidden>
       <defs>
         <clipPath id={clip}>
           <circle cx="10" cy="10" r="10" />

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { listMyGroups } from '../lib/lumensplit'
 import { useWallet } from '../wallet'
 import { useAsync } from '../useAsync'
-import { Avatar, Button, Card, ErrorBox, Loading } from '../components/ui'
+import { Avatar, Button, Card, ErrorBox, Icon, Loading } from '../components/ui'
 import { t } from '../i18n'
 
 export default function Home() {
@@ -10,31 +10,51 @@ export default function Home() {
 
   if (!address) {
     return (
-      <div className="pt-10 text-center">
-        <h1 className="font-display text-4xl font-bold leading-tight tracking-tight text-ink-900">
-          {t('Divide gastos con amigos.')}
-          <br />
-          <span className="text-brand-600">{t('Salda cuentas en segundos.')}</span>
-        </h1>
-        <p className="mx-auto mt-4 max-w-xs text-ink-500">
-          {t('Una forma nueva de compartir gastos, construida sobre la blockchain de Stellar: pagos que llegan en segundos a cualquier país, comisiones de menos de un céntimo y un registro compartido que nadie puede alterar.')}
-        </p>
-        <Button className="mt-8 w-full py-3 text-base" onClick={connect} loading={connecting}>
-          {activating ? t('Activando tu cuenta de pruebas…') : t('Conectar Freighter')}
-        </Button>
-        {error && (
-          <div className="mt-4">
-            <ErrorBox message={error} />
+      <section className="grid items-center gap-10 py-4 md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] md:gap-14 md:py-12">
+        <div className="max-w-xl">
+          <h1 className="text-4xl leading-[1.05] text-ink-900 sm:text-5xl lg:text-6xl">
+            {t('Divide gastos con amigos.')}{' '}
+            <span className="bg-accent-400 box-decoration-clone px-1.5 text-on-accent">{t('Salda cuentas en segundos.')}</span>
+          </h1>
+          <p className="mt-6 max-w-lg text-base text-ink-700 sm:text-lg">
+            {t('Una forma nueva de compartir gastos, construida sobre la blockchain de Stellar: pagos que llegan en segundos a cualquier país, comisiones de menos de un céntimo y un registro compartido que nadie puede alterar.')}
+          </p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Button className="w-full sm:w-auto sm:px-8" onClick={connect} loading={connecting}>
+              {activating ? t('Activando tu cuenta de pruebas…') : t('Conectar Freighter')}
+            </Button>
+            <p className="text-sm text-ink-500">
+              {t('¿No tienes Freighter?')}{' '}
+              <a href="https://www.freighter.app/" target="_blank" rel="noreferrer" className="font-medium text-ink-900 underline underline-offset-2">
+                {t('Instálalo aquí')}
+              </a>{' '}
+              {t('y cambia a Testnet.')}
+            </p>
           </div>
-        )}
-        <p className="mt-4 text-xs text-ink-400">
-          {t('¿No tienes Freighter?')}{' '}
-          <a href="https://www.freighter.app/" target="_blank" rel="noreferrer" className="underline">
-            {t('Instálalo aquí')}
-          </a>{' '}
-          {t('y cambia a Testnet.')}
-        </p>
-      </div>
+          {error && (
+            <div className="mt-4">
+              <ErrorBox message={error} />
+            </div>
+          )}
+        </div>
+
+        {/* The product's own path, drawn as a ledger: no invented figures. */}
+        <ol
+          className="rounded-2xl bg-shade p-5 text-on-shade sm:p-7"
+          aria-label="LumenSplit"
+          style={{ ['--logo-ink' as string]: 'var(--on-shade)' }}
+        >
+          {[t('+ Nuevo grupo'), t('+ Añadir gasto'), t('Saldar cuentas')].map((step, i) => (
+            <li key={step} className="flex items-center gap-4 border-b border-shade-rule py-4 last:border-b-0">
+              <span className="key flex h-9 w-9 shrink-0 items-center justify-center border border-shade-rule text-sm text-on-shade-muted">
+                0{i + 1}
+              </span>
+              <span className={`font-display text-xl ${i === 2 ? 'text-accent-400' : ''}`}>{step.replace(/^\+\s*/, '')}</span>
+            </li>
+          ))}
+          <li className="key pt-4 text-xs text-on-shade-muted">Stellar testnet</li>
+        </ol>
+      </section>
     )
   }
 
@@ -46,39 +66,44 @@ function GroupList({ address }: { address: string }) {
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold">{t('Mis grupos')}</h1>
-        <Link to="/new">
-          <Button>{t('+ Nuevo grupo')}</Button>
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <h1 className="text-3xl text-ink-900 sm:text-4xl">{t('Mis grupos')}</h1>
+        <Link to="/new" className="btn btn-ink">
+          <Icon name="plus" />
+          {t('+ Nuevo grupo').replace(/^\+\s*/, '')}
         </Link>
       </div>
       {loading && !groups && <Loading />}
       {error && <ErrorBox message={error} />}
       {groups && groups.length === 0 && (
-        <Card className="py-10 text-center text-ink-500">
-          {t('Aún no tienes grupos.')} <br />
-          {t('Crea uno para empezar a dividir gastos.')}
+        <Card className="py-12 text-center">
+          <p className="font-display text-xl text-ink-900">{t('Aún no tienes grupos.')}</p>
+          <p className="mt-1 text-ink-500">{t('Crea uno para empezar a dividir gastos.')}</p>
+          <Link to="/new" className="btn btn-frame mt-6">
+            {t('+ Nuevo grupo').replace(/^\+\s*/, '')}
+          </Link>
         </Card>
       )}
-      <ul className="space-y-3">
+      <ul className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
         {groups?.map((g) => (
-          <li key={g.id}>
-            <Link to={`/g/${g.id}`}>
-              <Card className="flex items-center gap-3 transition hover:ring-brand-300">
-                <div className="flex-1">
-                  <div className="font-semibold">{g.name}</div>
-                  <div className="text-xs text-ink-500">
-                    {t('{n} miembros · grupo #{id}', { n: g.members.length, id: g.id })}
-                  </div>
-                </div>
-                <div className="flex -space-x-2">
-                  {g.members.slice(0, 4).map((m) => (
-                    <span key={m} className="rounded-full ring-2 ring-white">
-                      <Avatar address={m} />
-                    </span>
-                  ))}
-                </div>
-              </Card>
+          <li key={g.id} className="min-w-0">
+            <Link
+              to={`/g/${g.id}`}
+              className="group flex h-full flex-col justify-between gap-6 rounded-2xl bg-surface p-5 shadow-sm ring-1 ring-ink-200 hover:ring-ink-900"
+            >
+              <div className="min-w-0">
+                <h2 className="truncate text-xl text-ink-900">{g.name}</h2>
+                <p className="mt-1 text-sm text-ink-500">
+                  {t('{n} miembros · grupo #{id}', { n: g.members.length, id: g.id })}
+                </p>
+              </div>
+              <div className="flex -space-x-2">
+                {g.members.slice(0, 5).map((m) => (
+                  <span key={m} className="rounded-full ring-2 ring-surface">
+                    <Avatar address={m} />
+                  </span>
+                ))}
+              </div>
             </Link>
           </li>
         ))}

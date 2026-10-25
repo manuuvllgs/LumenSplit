@@ -52,10 +52,9 @@ function NameSetup({ address, onSkip }: { address: string; onSkip: () => void })
   }
 
   return (
-    <form onSubmit={save} className="space-y-5 pt-8 text-center">
-      <div className="text-4xl">👋</div>
-      <h1 className="text-3xl font-bold">{t('¿Cómo te llamas?')}</h1>
-      <p className="mx-auto max-w-xs text-sm text-ink-500">
+    <form onSubmit={save} className="mx-auto max-w-md space-y-5 pt-4 text-center sm:pt-10">
+      <h1 className="text-4xl text-ink-900 sm:text-5xl">{t('¿Cómo te llamas?')}</h1>
+      <p className="mx-auto max-w-sm text-base text-ink-700">
         {t('Es el nombre que verán tus amigos en lugar de tu dirección. Se guarda en este dispositivo y lo compartimos con tus grupos cuando creas uno o te unes.')}
       </p>
       <Card className="space-y-3 text-left">
@@ -65,18 +64,18 @@ function NameSetup({ address, onSkip }: { address: string; onSkip: () => void })
           onChange={(e) => setDraft(e.target.value)}
           maxLength={MAX_NAME_LENGTH}
           placeholder="Ana, Ben, Dani…"
-          className="w-full rounded-xl border border-ink-200 px-3 py-3 text-lg font-semibold focus:border-brand-600 focus:outline-none"
+          className="field min-h-14! text-lg font-semibold"
         />
         <div className="flex items-center justify-between text-xs text-ink-500">
           <span>{t('Tu cuenta')}</span>
           <KeyHint address={address} />
         </div>
         {invalid && <p className="text-xs text-neg-600">{invalid}</p>}
-        <Button type="submit" className="w-full py-3" disabled={!draft.trim() || !!invalid}>
+        <Button type="submit" className="w-full" disabled={!draft.trim() || !!invalid}>
           {t('Continuar')}
         </Button>
       </Card>
-      <button type="button" onClick={onSkip} className="text-sm text-ink-500 underline">
+      <button type="button" onClick={onSkip} className="btn btn-text text-ink-700!">
         {t('Ahora no')}
       </button>
     </form>
