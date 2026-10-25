@@ -109,18 +109,24 @@ Two signatures are needed because a Soroban contract call cannot share a transac
 |---|---|---|
 | `create_group` | `(creator: Address, name: String, token: Address, members: Vec<Address>) -> u32` | Creates a group. `token` is the settlement asset (XLM or USDC SAC). The creator signs and must be a member. Returns the group id. |
 | `add_expense` | `(group_id: u32, payer: Address, amount: i128, description: String, participants: Vec<Address>)` | The payer signs. Splits equally; the remainder goes to the first participants so the group always sums to 0. |
+| `add_expense_custom` | `(group_id: u32, payer: Address, description: String, shares: Vec<Share{member, amount}>)` | The payer signs. Each participant owes a different amount; the expense total is the sum of the shares. |
 | `settle` | `(group_id: u32, from: Address, to: Address, amount: i128)` | `from` signs. Transfers real tokens from `from` to `to` and updates balances. Only if `from` owes and `to` is owed; cannot overpay. |
+| `settle_all` | `(group_id: u32, from: Address) -> Vec<Transfer>` | `from` signs once. Pays every debt `from` has in the group, following `suggest_settlements`, in one atomic transaction: all transfers succeed or none do. |
 | `suggest_settlements` | `(group_id: u32) -> Vec<Transfer{from, to, amount}>` | Debt simplification: minimal list of payments that leaves everyone at 0. |
+| `create_invite` | `(group_id: u32, member: Address, code_hash: BytesN<32>)` | A member signs. Stores only the SHA-256 of a secret invite code; a new invite replaces the previous one. |
+| `join_group` | `(group_id: u32, member: Address, code: Bytes)` | The new member signs. Joins with balance 0 if `sha256(code)` matches the invite. |
 | `get_group` | `(group_id: u32) -> Group{id, name, token, members}` | Read |
 | `get_balances` | `(group_id: u32) -> Map<Address, i128>` | Positive = is owed, negative = owes |
-| `get_expenses` | `(group_id: u32) -> Vec<Expense{payer, amount, description, participants, timestamp}>` | Read |
+| `get_expenses` | `(group_id: u32) -> Vec<Expense{payer, amount, description, participants, shares, timestamp}>` | Read. `shares[i]` is what `participants[i]` owes for that expense. |
 | `group_count` | `() -> u32` | Number of groups (ids go from 1 to N) |
 
 Amounts are `i128` in the token's smallest unit (XLM and USDC use 7 decimals: 1 XLM = 10_000_000).
 
-**Errors:** 1 `GroupNotFound` · 2 `NotAMember` · 3 `InvalidAmount` · 4 `NoParticipants` · 5 `EmptyGroup` · 6 `DuplicateMember` · 7 `NothingToSettle` · 8 `AmountTooLarge` · 9 `SelfSettlement`
+**Errors:** 1 `GroupNotFound` · 2 `NotAMember` · 3 `InvalidAmount` · 4 `NoParticipants` · 5 `EmptyGroup` · 6 `DuplicateMember` · 7 `NothingToSettle` · 8 `AmountTooLarge` · 9 `SelfSettlement` · 10 `AlreadyMember` · 11 `InvalidInvite` · 12 `NoInvite`
 
-**Tests:** 7 unit tests cover group creation, equal splits and remainders, outsiders being rejected, settlement moving tokens, overpay protection and suggested settlements clearing all debts.
+**Tests:** 15 unit tests cover group creation, equal splits and remainders, custom splits (and their validation), outsiders being rejected, settlement moving tokens, overpay protection, `settle_all` paying several creditors in one call, invites (valid, wrong code, no invite, already a member, non-members creating invites) and suggested settlements clearing all debts.
+
+**Invite links without leaking the code.** The link looks like `https://app/join/7#<code>`. Everything after `#` stays in the browser and is never sent to any server. The contract only stores `sha256(code)`, so reading the chain does not reveal how to join a group.
 
 ## Run it locally
 
