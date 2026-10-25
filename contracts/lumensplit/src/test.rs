@@ -2,7 +2,7 @@
 extern crate std;
 
 use super::*;
-use soroban_sdk::{testutils::Address as _, token::StellarAssetClient, vec, Address, Env, String};
+use soroban_sdk::{testutils::Address as _, token::StellarAssetClient, vec, Address, Bytes, BytesN, Env, String};
 
 struct Setup<'a> {
     env: Env,
@@ -153,4 +153,158 @@ fn suggested_settlements_clear_all_debts() {
     for (_, bal) in s.client.get_balances(&s.group_id).iter() {
         assert_eq!(bal, 0);
     }
+}
+
+// ---------- Phase 2: settle_all, invites, custom splits ----------
+
+fn invite(s: &Setup, code: &str) -> Bytes {
+    let code = Bytes::from_slice(&s.env, code.as_bytes());
+    let hash: BytesN<32> = s.env.crypto().sha256(&code).into();
+    s.client.create_invite(&s.group_id, &s.ana, &hash);
+    code
+}
+
+#[test]
+fn settle_all_pays_every_creditor_in_one_call() {
+    let s = setup();
+    let all = vec![&s.env, s.ana.clone(), s.ben.clone(), s.carla.clone()];
+    // Same story as the demo: ana +43, ben -59, carla +16.
+    s.client.add_expense(&s.group_id, &s.ana, &90, &String::from_str(&s.env, "Dinner"), &all);
+    s.client.add_expense(&s.group_id, &s.ben, &24, &String::from_str(&s.env, "Uber"), &all);
+    s.client.add_expense(&s.group_id, &s.carla, &45, &String::from_str(&s.env, "Museum"), &all);
+    s.client.add_expense(
+        &s.group_id, &s.ana, &12, &String::from_str(&s.env, "Nata"),
+        &vec![&s.env, s.ana.clone(), s.carla.clone()],
+    );
+    s.client.add_expense(
+        &s.group_id, &s.carla, &60, &String::from_str(&s.env, "Fado"),
+        &vec![&s.env, s.ben.clone(), s.carla.clone()],
+    );
+
+    let ben_before = s.token.balance(&s.ben);
+    let done = s.client.settle_all(&s.group_id, &s.ben);
+
+    assert_eq!(done.len(), 2);
+    assert_eq!(s.token.balance(&s.ben), ben_before - 59);
+    for (_, bal) in s.client.get_balances(&s.group_id).iter() {
+        assert_eq!(bal, 0);
+    }
+}
+
+#[test]
+fn settle_all_without_debt_fails() {
+    let s = setup();
+    let all = vec![&s.env, s.ana.clone(), s.ben.clone(), s.carla.clone()];
+    s.client.add_expense(&s.group_id, &s.ana, &90, &String::from_str(&s.env, "Dinner"), &all);
+    assert_eq!(
+        s.client.try_settle_all(&s.group_id, &s.ana),
+        Err(Ok(Error::NothingToSettle))
+    );
+}
+
+#[test]
+fn join_with_valid_invite() {
+    let s = setup();
+    let code = invite(&s, "secret-code-123");
+    let dani = Address::generate(&s.env);
+
+    s.client.join_group(&s.group_id, &dani, &code);
+
+    assert!(s.client.get_group(&s.group_id).members.contains(&dani));
+    assert_eq!(s.client.get_balances(&s.group_id).get(dani.clone()), Some(0));
+
+    // The new member can take part in expenses right away.
+    s.client.add_expense(
+        &s.group_id, &dani, &40, &String::from_str(&s.env, "Drinks"),
+        &vec![&s.env, dani.clone(), s.ana.clone()],
+    );
+    assert_eq!(s.client.get_balances(&s.group_id).get(dani), Some(20));
+}
+
+#[test]
+fn join_rejects_bad_code_missing_invite_and_existing_member() {
+    let s = setup();
+    let dani = Address::generate(&s.env);
+    let wrong = Bytes::from_slice(&s.env, b"nope");
+
+    assert_eq!(
+        s.client.try_join_group(&s.group_id, &dani, &wrong),
+        Err(Ok(Error::NoInvite))
+    );
+
+    let code = invite(&s, "secret-code-123");
+    assert_eq!(
+        s.client.try_join_group(&s.group_id, &dani, &wrong),
+        Err(Ok(Error::InvalidInvite))
+    );
+    assert_eq!(
+        s.client.try_join_group(&s.group_id, &s.ben, &code),
+        Err(Ok(Error::AlreadyMember))
+    );
+}
+
+#[test]
+fn only_members_can_create_invites() {
+    let s = setup();
+    let stranger = Address::generate(&s.env);
+    let hash = BytesN::from_array(&s.env, &[7u8; 32]);
+    assert_eq!(
+        s.client.try_create_invite(&s.group_id, &stranger, &hash),
+        Err(Ok(Error::NotAMember))
+    );
+}
+
+#[test]
+fn custom_split_uses_each_amount_and_sums_to_zero() {
+    let s = setup();
+    let shares = vec![
+        &s.env,
+        Share { member: s.ana.clone(), amount: 10 },
+        Share { member: s.ben.clone(), amount: 35 },
+        Share { member: s.carla.clone(), amount: 15 },
+    ];
+    s.client.add_expense_custom(&s.group_id, &s.ana, &String::from_str(&s.env, "Steak night"), &shares);
+
+    let b = s.client.get_balances(&s.group_id);
+    assert_eq!(b.get(s.ana.clone()), Some(50));
+    assert_eq!(b.get(s.ben.clone()), Some(-35));
+    assert_eq!(b.get(s.carla.clone()), Some(-15));
+
+    let e = s.client.get_expenses(&s.group_id).get_unchecked(0);
+    assert_eq!(e.amount, 60);
+    assert_eq!(e.shares, vec![&s.env, 10i128, 35, 15]);
+}
+
+#[test]
+fn custom_split_rejects_zero_duplicates_and_outsiders() {
+    let s = setup();
+    let desc = String::from_str(&s.env, "Bad");
+    let zero = vec![&s.env, Share { member: s.ben.clone(), amount: 0 }];
+    assert_eq!(
+        s.client.try_add_expense_custom(&s.group_id, &s.ana, &desc, &zero),
+        Err(Ok(Error::InvalidAmount))
+    );
+    let dup = vec![
+        &s.env,
+        Share { member: s.ben.clone(), amount: 5 },
+        Share { member: s.ben.clone(), amount: 5 },
+    ];
+    assert_eq!(
+        s.client.try_add_expense_custom(&s.group_id, &s.ana, &desc, &dup),
+        Err(Ok(Error::DuplicateMember))
+    );
+    let outsider = vec![&s.env, Share { member: Address::generate(&s.env), amount: 5 }];
+    assert_eq!(
+        s.client.try_add_expense_custom(&s.group_id, &s.ana, &desc, &outsider),
+        Err(Ok(Error::NotAMember))
+    );
+}
+
+#[test]
+fn equal_split_fills_shares() {
+    let s = setup();
+    let all = vec![&s.env, s.ana.clone(), s.ben.clone(), s.carla.clone()];
+    s.client.add_expense(&s.group_id, &s.ben, &100, &String::from_str(&s.env, "Taxi"), &all);
+    let e = s.client.get_expenses(&s.group_id).get_unchecked(0);
+    assert_eq!(e.shares, vec![&s.env, 34i128, 33, 33]);
 }
