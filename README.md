@@ -141,7 +141,7 @@ VITE_RPC_URL=https://soroban-testnet.stellar.org
 | | Role |
 |---|---|
 | Manu | Soroban contract, deployment, integration |
-| _TODO_ | Frontend |
+| Gregorio | Frontend |
 | Alex | Design/UX, README, pitch and demo video |
 
 ## Use of AI
