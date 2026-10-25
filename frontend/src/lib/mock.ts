@@ -25,12 +25,14 @@ interface StoredGroup {
   token: Address
   members: Address[]
   balances: Record<Address, string> // bigint as string for JSON
-  expenses: (Omit<Expense, 'amount'> & { amount: string })[]
+  expenses: (Omit<Expense, 'amount' | 'shares'> & { amount: string; shares?: string[] })[]
 }
 
 interface Store {
   groups: StoredGroup[]
   seededFor: Address[]
+  /** groupId -> hex sha256 of the active invite code */
+  invites?: Record<number, string>
 }
 
 function load(): Store {
@@ -81,12 +83,31 @@ function applyExpense(g: StoredGroup, payer: Address, amount: bigint, descriptio
   const n = BigInt(participants.length)
   const share = amount / n
   const rem = amount % n
+  const shares = participants.map((_, i) => share + (BigInt(i) < rem ? 1n : 0n))
+  recordExpense(g, payer, description, participants.map((member, i) => ({ member, amount: shares[i] })), ts)
+}
+
+function recordExpense(g: StoredGroup, payer: Address, description: string, shares: { member: Address; amount: bigint }[], ts: number) {
+  const amount = shares.reduce((sum, s) => sum + s.amount, 0n)
   g.balances[payer] = (bal(g, payer) + amount).toString()
-  participants.forEach((p, i) => {
-    const owed = share + (BigInt(i) < rem ? 1n : 0n)
-    g.balances[p] = (bal(g, p) - owed).toString()
+  for (const s of shares) g.balances[s.member] = (bal(g, s.member) - s.amount).toString()
+  g.expenses.push({
+    payer,
+    amount: amount.toString(),
+    description,
+    participants: shares.map((s) => s.member),
+    shares: shares.map((s) => s.amount.toString()),
+    timestamp: ts,
   })
-  g.expenses.push({ payer, amount: amount.toString(), description, participants, timestamp: ts })
+}
+
+function applyCustom(g: StoredGroup, payer: Address, description: string, shares: { member: Address; amount: bigint }[], ts: number) {
+  if (!g.members.includes(payer)) throw contractError(ContractError.NotAMember)
+  if (shares.length === 0) throw contractError(ContractError.NoParticipants)
+  if (shares.some((s) => !g.members.includes(s.member))) throw contractError(ContractError.NotAMember)
+  if (shares.some((s) => s.amount <= 0n)) throw contractError(ContractError.InvalidAmount)
+  if (new Set(shares.map((s) => s.member)).size !== shares.length) throw contractError(ContractError.DuplicateMember)
+  recordExpense(g, payer, description, shares, ts)
 }
 
 function seedDemo(s: Store, me: Address) {
@@ -204,7 +225,7 @@ export async function getBalances(groupId: number): Promise<Balances> {
 
 export async function getExpenses(groupId: number): Promise<Expense[]> {
   await delay(150)
-  return find(load(), groupId).expenses.map((e) => ({ ...e, amount: BigInt(e.amount) }))
+  return find(load(), groupId).expenses.map((e) => ({ ...e, amount: BigInt(e.amount), shares: e.shares?.map(BigInt) }))
 }
 
 export async function suggestSettlements(groupId: number): Promise<Transfer[]> {
@@ -235,4 +256,82 @@ export async function listMyGroups(address: Address): Promise<Group[]> {
   seedDemo(s, address)
   save(s)
   return s.groups.filter((g) => g.members.includes(address)).map(toGroup).reverse()
+}
+
+// ── Phase 2 ─────────────────────────────────────────────────────────────────
+
+// Same code format as soroban.ts: 16 random bytes as hex; on-chain hash = sha256(raw bytes).
+const hex = (b: Uint8Array) => Array.from(b, (x) => x.toString(16).padStart(2, '0')).join('')
+const sha256Hex = async (b: Uint8Array) =>
+  hex(new Uint8Array(await crypto.subtle.digest('SHA-256', b as Uint8Array<ArrayBuffer>)))
+
+function fromHex(code: string): Uint8Array {
+  if (!/^([0-9a-f]{2})+$/i.test(code)) throw contractError(ContractError.InvalidInvite)
+  return Uint8Array.from(code.match(/../g)!.map((h) => parseInt(h, 16)))
+}
+
+export async function settleAll(groupId: number, from: Address, opts?: TxOptions): Promise<TxResult & { transfers: Transfer[] }> {
+  const mine = (await suggestSettlements(groupId)).filter((t) => t.from === from)
+  if (mine.length === 0) throw contractError(ContractError.NothingToSettle)
+  const hash = await fakeTx(opts)
+  const s = load()
+  const g = find(s, groupId)
+  for (const t of mine) {
+    checkSettle(g, t.from, t.to, t.amount)
+    g.balances[t.from] = (bal(g, t.from) + t.amount).toString()
+    g.balances[t.to] = (bal(g, t.to) - t.amount).toString()
+  }
+  save(s)
+  return { hash, transfers: mine }
+}
+
+export async function createInvite(
+  groupId: number,
+  member: Address,
+  opts?: TxOptions,
+): Promise<TxResult & { code: string; link: string }> {
+  if (!find(load(), groupId).members.includes(member)) throw contractError(ContractError.NotAMember)
+  const secret = crypto.getRandomValues(new Uint8Array(16))
+  const code = hex(secret)
+  const codeHash = await sha256Hex(secret)
+  const hash = await fakeTx(opts)
+  const s = load()
+  s.invites = { ...s.invites, [groupId]: codeHash }
+  save(s)
+  return { hash, code, link: `${window.location.origin}/join/${groupId}#${code}` }
+}
+
+export async function joinGroup(groupId: number, member: Address, code: string, opts?: TxOptions): Promise<TxResult> {
+  const check = async (s: Store) => {
+    const g = find(s, groupId)
+    if (g.members.includes(member)) throw contractError(ContractError.AlreadyMember)
+    const stored = s.invites?.[groupId]
+    if (!stored) throw contractError(ContractError.NoInvite)
+    if ((await sha256Hex(fromHex(code))) !== stored) throw contractError(ContractError.InvalidInvite)
+    return g
+  }
+  await check(load())
+  const hash = await fakeTx(opts)
+  const s = load()
+  const g = await check(s)
+  g.members.push(member)
+  g.balances[member] = '0'
+  save(s)
+  return { hash }
+}
+
+export async function addExpenseCustom(
+  groupId: number,
+  payer: Address,
+  description: string,
+  shares: { address: Address; amount: bigint }[],
+  opts?: TxOptions,
+): Promise<TxResult> {
+  const byMember = shares.map((x) => ({ member: x.address, amount: x.amount }))
+  applyCustom(structuredClone(find(load(), groupId)), payer, description, byMember, 0)
+  const hash = await fakeTx(opts)
+  const s = load()
+  applyCustom(find(s, groupId), payer, description, byMember, Math.floor(Date.now() / 1000))
+  save(s)
+  return { hash }
 }
