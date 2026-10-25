@@ -1,16 +1,31 @@
+import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { getBalances, getExpenses, getGroup } from '../lib/lumensplit'
-import { formatDate } from '../lib/format'
+import { getBalances, getExpenses, getGroup, type Expense } from '../lib/lumensplit'
+import { formatAmount, formatDate } from '../lib/format'
 import { useDisplayName } from '../lib/aliases'
 import { useWallet } from '../wallet'
 import { useAsync } from '../useAsync'
 import { Amount, Avatar, Button, Card, ErrorBox, Loading, MemberName, PageHeader } from '../components/ui'
+import { InviteModal } from '../components/InviteModal'
+
+/** Equal splits differ by at most 1 stroop (remainder), so anything wider is a custom split. */
+function isCustomSplit(e: Expense): boolean {
+  if (!e.shares || e.shares.length < 2) return false
+  let min = e.shares[0]
+  let max = e.shares[0]
+  for (const s of e.shares) {
+    if (s < min) min = s
+    if (s > max) max = s
+  }
+  return max - min > 1n
+}
 
 export default function GroupDetail() {
   const id = Number(useParams().id)
   const { address: me } = useWallet()
   const name = useDisplayName()
-  const { data, error, loading } = useAsync(
+  const [inviting, setInviting] = useState(false)
+  const { data, error, loading, reload } = useAsync(
     () => Promise.all([getGroup(id), getBalances(id), getExpenses(id)]),
     [id],
   )
@@ -24,7 +39,25 @@ export default function GroupDetail() {
 
   return (
     <div className="space-y-5">
-      <PageHeader title={group.name} back="/" />
+      <PageHeader
+        title={group.name}
+        back="/"
+        right={
+          <Button variant="ghost" onClick={() => setInviting(true)}>
+            + Invitar
+          </Button>
+        }
+      />
+      {inviting && (
+        <InviteModal
+          groupId={id}
+          groupName={group.name}
+          onClose={() => {
+            setInviting(false)
+            void reload()
+          }}
+        />
+      )}
 
       <Card className="bg-ink-900! text-white ring-0!">
         <div className="text-sm opacity-80">Tu saldo</div>
@@ -55,7 +88,12 @@ export default function GroupDetail() {
       </div>
 
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-ink-500">Saldos</h2>
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-500">Saldos</h2>
+          <button onClick={() => setInviting(true)} className="text-sm font-semibold text-brand-700 hover:underline">
+            Invitar amigos
+          </button>
+        </div>
         <Card className="divide-y divide-ink-100 p-0">
           {group.members.map((m) => (
             <div key={m} className="flex items-center gap-3 px-4 py-3">
@@ -66,6 +104,14 @@ export default function GroupDetail() {
               <Amount value={balances[m] ?? 0n} signed />
             </div>
           ))}
+          {group.members.length === 1 && (
+            <button
+              onClick={() => setInviting(true)}
+              className="w-full px-4 py-4 text-sm font-semibold text-brand-700 hover:bg-brand-50"
+            >
+              Estás solo en el grupo. Invita a tus amigos con un enlace o QR →
+            </button>
+          )}
         </Card>
       </section>
 
@@ -84,6 +130,15 @@ export default function GroupDetail() {
                     Pagó {e.payer === me ? 'tú' : name(e.payer)} · {e.participants.length} personas ·{' '}
                     {formatDate(e.timestamp)}
                   </div>
+                  {isCustomSplit(e) && (
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {e.participants.map((p, j) => (
+                        <span key={p} className="rounded-full bg-ink-100 px-2 py-0.5 text-[11px] text-ink-700">
+                          {p === me ? 'Tú' : name(p)} {formatAmount(e.shares![j], false, 2)}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <Amount value={e.amount} />
               </div>

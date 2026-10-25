@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { HashRouter, Link, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router-dom'
 import { isMock } from './lib/lumensplit'
 import { shortAddress } from './lib/format'
 import { useWallet, WalletProvider } from './wallet'
@@ -8,6 +8,7 @@ import NewGroup from './pages/NewGroup'
 import GroupDetail from './pages/GroupDetail'
 import AddExpense from './pages/AddExpense'
 import Settle from './pages/Settle'
+import Join from './pages/Join'
 
 function Shell({ children }: { children: ReactNode }) {
   const { address, disconnect } = useWallet()
@@ -47,7 +48,7 @@ function RequireWallet({ children }: { children: ReactNode }) {
 export default function App() {
   return (
     <WalletProvider>
-      <HashRouter>
+      <BrowserRouter>
         <Shell>
           <Routes>
             <Route path="/" element={<Home />} />
@@ -55,10 +56,12 @@ export default function App() {
             <Route path="/g/:id" element={<RequireWallet><GroupDetail /></RequireWallet>} />
             <Route path="/g/:id/expense" element={<RequireWallet><AddExpense /></RequireWallet>} />
             <Route path="/g/:id/settle" element={<RequireWallet><Settle /></RequireWallet>} />
+            {/* Invite links: /join/<groupId>#<code>. No wallet required to open it. */}
+            <Route path="/join/:id" element={<Join />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Shell>
-      </HashRouter>
+      </BrowserRouter>
     </WalletProvider>
   )
 }
