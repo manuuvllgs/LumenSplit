@@ -7,7 +7,8 @@ Everything below runs on **testnet**. Follow the steps in order and the numbers 
 1. A clean contract instance, so no test groups show up in the app.
 2. `./scripts/demo-seed.sh` → group **"Lisbon trip"** (id 1) with Ana, Ben and Carla and 5 expenses.
 3. Dani gets 500 EURT with `frontend/scripts/give-eurt.mjs`.
-4. Alex receives the secret keys of **Ana, Ben and Dani** (testnet only) and imports them in Freighter.
+4. Names on every demo account (Ana, Ben, Carla, Dani) with `frontend/scripts/set-names.mjs`, so the app shows names and never asks "choose your name" during the take.
+5. Alex receives the secret keys of **Ana, Ben and Dani** (testnet only) and imports them in Freighter.
 
 ## Before recording (Alex, 5 min)
 
