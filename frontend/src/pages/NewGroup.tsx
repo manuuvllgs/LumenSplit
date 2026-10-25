@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createGroup } from '../lib/lumensplit'
-import { setHint, setPendingNames, useNames } from '../lib/aliases'
+import { publishMyNameIfNeeded, setHint, setPendingNames, useNames } from '../lib/aliases'
 import { isValidAddress } from '../lib/format'
 import { useWallet } from '../wallet'
 import { useTx } from '../useTx'
@@ -26,6 +26,7 @@ export default function NewGroup() {
   const { state, run, busy } = useTx()
   const [groupName, setGroupName] = useState('')
   const [rows, setRows] = useState<Row[]>([emptyRow(), emptyRow()])
+  const [sharing, setSharing] = useState(false)
 
   const people = rows.filter((r) => r.name.trim() || r.address.trim())
   const missingName = people.some((r) => !r.name.trim())
@@ -47,7 +48,11 @@ export default function NewGroup() {
     people.filter((r) => r.address.trim()).forEach((r) => setHint(r.address.trim(), r.name))
     const pending = people.filter((r) => !r.address.trim()).map((r) => r.name.trim())
     setPendingNames(res.groupId, pending)
-    setTimeout(() => navigate(`/g/${res.groupId}${pending.length ? '?invitar=1' : ''}`), 1200)
+    // So friends see who created it. Optional: if cancelled, the group still exists.
+    setSharing(true)
+    await publishMyNameIfNeeded(me).catch(() => null)
+    setSharing(false)
+    setTimeout(() => navigate(`/g/${res.groupId}${pending.length ? '?invitar=1' : ''}`), 800)
   }
 
   return (
@@ -128,6 +133,11 @@ export default function NewGroup() {
 
       <div className="mt-4 space-y-3">
         <TxStatus state={state} successText="Grupo creado" />
+        {sharing && (
+          <div className="rounded-xl bg-brand-50 p-3 text-sm text-brand-800">
+            Compartiendo tu nombre con el grupo (firma en Freighter, opcional)…
+          </div>
+        )}
         <Button type="submit" className="w-full py-3" disabled={!canSubmit} loading={busy}>
           Crear grupo
         </Button>

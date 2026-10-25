@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams, Link } from 'react-router-dom'
 import { getGroup, joinGroup } from '../lib/lumensplit'
-import { setChosenName, useChosenName, useNames } from '../lib/aliases'
+import { publishedName, publishMyNameIfNeeded, setMyName, useMyName, useNames } from '../lib/aliases'
 import { parseInviteHash } from '../lib/inviteLink'
 import { humanizeError } from '../lib/errors'
 import { explorerTxUrl } from '../lib/format'
-import { MAX_NAME_LENGTH, saveMyName, validateName } from '../lib/profile'
+import { ensureFunded, MAX_NAME_LENGTH, validateName } from '../lib/profile'
 import { useWallet } from '../wallet'
 import { useAsync } from '../useAsync'
 import { Avatar, Button, Card, ErrorBox, KeyHint, Loading, Spinner } from '../components/ui'
@@ -14,7 +14,7 @@ type Step =
   | { s: 'idle' }
   | { s: 'name' }
   | { s: 'join'; nameHash?: string }
-  | { s: 'done'; joinHash: string }
+  | { s: 'done'; joinHash: string; nameShared: boolean }
   | { s: 'error'; message: string }
 
 /**
@@ -27,7 +27,7 @@ export default function Join() {
   const { code, names: offered } = parseInviteHash(useLocation().hash)
   const navigate = useNavigate()
   const { address, connect, connecting, error: walletError } = useWallet()
-  const myName = useChosenName(address)
+  const myName = useMyName(address)
   const { data: group, error, loading } = useAsync(() => getGroup(id), [id])
   const memberNames = useNames(group?.members ?? [])
   const [picked, setPicked] = useState<string | null>(null)
@@ -50,27 +50,33 @@ export default function Join() {
   const finalName = (picked === '__other__' ? other : picked ?? '').trim()
   const nameError = finalName ? validateName(finalName) : null
   const busy = step.s === 'name' || step.s === 'join'
+  const needsPublish = !!address && !!finalName && publishedName(address) !== finalName
+  const twoSteps = needsPublish
   const canJoin = !!address && !!finalName && !nameError && !busy && step.s !== 'done'
 
   async function join() {
     if (!address || !canJoin) return
-    let nameHash: string | undefined
+    let nameShared = true
     try {
-      if (finalName !== myName) {
+      setMyName(address, finalName)
+      await ensureFunded(address)
+      if (needsPublish) {
         setStep({ s: 'name' })
-        nameHash = (await saveMyName(address, finalName)).hash
-        setChosenName(address, finalName)
+        // Sharing the name is nice-to-have: if it is cancelled, still join.
+        nameShared = await publishMyNameIfNeeded(address).then(
+          () => true,
+          () => false,
+        )
       }
-      setStep({ s: 'join', nameHash })
+      setStep({ s: 'join' })
       const res = await joinGroup(id, code)
-      setStep({ s: 'done', joinHash: res.hash })
+      setStep({ s: 'done', joinHash: res.hash, nameShared })
       setTimeout(() => navigate(`/g/${id}`, { replace: true }), 1500)
     } catch (e) {
       setStep({ s: 'error', message: humanizeError(e) })
     }
   }
 
-  const twoSteps = finalName !== myName
 
   return (
     <div className="space-y-5 pt-6 text-center">
@@ -154,7 +160,7 @@ export default function Join() {
             {canJoin && (
               <p className="text-center text-xs text-ink-500">
                 {twoSteps
-                  ? '2 firmas en Freighter: guardar tu nombre en tu cuenta y unirte.'
+                  ? '2 firmas en Freighter: compartir tu nombre con el grupo y unirte.'
                   : '1 firma en Freighter para unirte.'}
               </p>
             )}
@@ -172,7 +178,7 @@ function JoinProgress({ step, twoSteps }: { step: Step; twoSteps: boolean }) {
   if (step.s === 'done')
     return (
       <div className="rounded-xl bg-pos-50 p-3 text-sm text-pos-700">
-        ✓ ¡Ya estás dentro!{' '}
+        ✓ ¡Ya estás dentro!{step.nameShared ? '' : ' (tu nombre solo se ve en este dispositivo)'}{' '}
         <a href={explorerTxUrl(step.joinHash)} target="_blank" rel="noreferrer" className="font-semibold underline">
           Ver en stellar.expert ↗
         </a>
@@ -182,7 +188,7 @@ function JoinProgress({ step, twoSteps }: { step: Step; twoSteps: boolean }) {
     <div className="space-y-1 rounded-xl bg-brand-50 p-3 text-sm text-brand-800">
       {twoSteps && (
         <div className="flex items-center gap-2">
-          {step.s === 'name' ? <Spinner /> : <span>✓</span>} 1/2 Guardando tu nombre…
+          {step.s === 'name' ? <Spinner /> : <span>✓</span>} 1/2 Compartiendo tu nombre…
         </div>
       )}
       {step.s === 'join' && (
