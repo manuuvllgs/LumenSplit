@@ -9,6 +9,7 @@ import { ensureFunded, MAX_NAME_LENGTH, validateName } from '../lib/profile'
 import { useWallet } from '../wallet'
 import { useAsync } from '../useAsync'
 import { Avatar, Button, Card, ErrorBox, KeyHint, Loading, Spinner } from '../components/ui'
+import { t } from '../i18n'
 
 type Step =
   | { s: 'idle' }
@@ -39,9 +40,9 @@ export default function Join() {
     if (picked === null && myName) setPicked(myName)
   }, [myName, picked])
 
-  if (!code) return <ErrorBox message="Este enlace no tiene código de invitación. Pide a tu amigo que te lo vuelva a enviar." />
+  if (!code) return <ErrorBox message={t('Este enlace no tiene código de invitación. Pide a tu amigo que te lo vuelva a enviar.')} />
   if (loading && !group) return <Loading />
-  if (error || !group) return <ErrorBox message={error ?? 'No encontramos este grupo.'} />
+  if (error || !group) return <ErrorBox message={error ?? t('No encontramos este grupo.')} />
 
   const alreadyMember = !!address && group.members.includes(address)
   const taken = new Set(group.members.map((m) => memberNames[m]?.toLowerCase()).filter(Boolean))
@@ -80,7 +81,7 @@ export default function Join() {
 
   return (
     <div className="space-y-5 pt-6 text-center">
-      <div className="text-sm font-semibold uppercase tracking-wide text-ink-500">Te han invitado a</div>
+      <div className="text-sm font-semibold uppercase tracking-wide text-ink-500">{t('Te han invitado a')}</div>
       <h1 className="text-3xl font-bold">{group.name}</h1>
       <div className="flex justify-center -space-x-2">
         {group.members.slice(0, 6).map((m) => (
@@ -90,29 +91,31 @@ export default function Join() {
         ))}
       </div>
       <p className="text-sm text-ink-500">
-        {group.members.length === 1 ? '1 persona ya divide' : `${group.members.length} personas ya dividen`} gastos aquí.
-        Al unirte empiezas con saldo 0.
+        {group.members.length === 1
+          ? t('1 persona ya divide gastos aquí.')
+          : t('{n} personas ya dividen gastos aquí.', { n: group.members.length })}{' '}
+        {t('Al unirte empiezas con saldo 0.')}
       </p>
 
       <Card className="space-y-4 text-left">
         {!address ? (
           <>
             <Button className="w-full py-3" onClick={connect} loading={connecting}>
-              Conectar Freighter
+              {t('Conectar Freighter')}
             </Button>
             {walletError && <ErrorBox message={walletError} />}
           </>
         ) : alreadyMember && step.s !== 'done' ? (
           <>
-            <div className="text-center text-sm text-ink-700">Ya eres miembro de este grupo.</div>
+            <div className="text-center text-sm text-ink-700">{t('Ya eres miembro de este grupo.')}</div>
             <Link to={`/g/${id}`}>
-              <Button className="w-full">Ir al grupo</Button>
+              <Button className="w-full">{t('Ir al grupo')}</Button>
             </Link>
           </>
         ) : (
           <>
             <div>
-              <div className="text-sm font-semibold text-ink-900">¿Quién eres?</div>
+              <div className="text-sm font-semibold text-ink-900">{t('¿Quién eres?')}</div>
               <div className="mt-2 flex flex-wrap gap-2">
                 {choices.map((n) => (
                   <button
@@ -135,7 +138,7 @@ export default function Join() {
                     picked === '__other__' ? 'bg-brand-600 text-white ring-brand-600' : 'bg-white text-ink-500 ring-ink-200'
                   }`}
                 >
-                  {choices.length ? 'Otro nombre' : 'Escribir mi nombre'}
+                  {choices.length ? t('Otro nombre') : t('Escribir mi nombre')}
                 </button>
               </div>
               {picked === '__other__' && (
@@ -144,24 +147,24 @@ export default function Join() {
                   value={other}
                   onChange={(e) => setOther(e.target.value)}
                   maxLength={MAX_NAME_LENGTH}
-                  placeholder="Tu nombre"
+                  placeholder={t('Tu nombre')}
                   className="mt-2 w-full rounded-xl border border-ink-200 px-3 py-2.5 font-semibold focus:border-brand-600 focus:outline-none"
                 />
               )}
               {nameError && <p className="mt-1 text-xs text-neg-600">{nameError}</p>}
               <div className="mt-2 flex items-center justify-between text-xs text-ink-500">
-                <span>Tu cuenta</span>
+                <span>{t('Tu cuenta')}</span>
                 <KeyHint address={address} />
               </div>
             </div>
             <Button className="w-full py-3" onClick={join} loading={busy} disabled={!canJoin}>
-              {finalName ? `Unirme como ${finalName}` : 'Elige tu nombre'}
+              {finalName ? t('Unirme como {name}', { name: finalName }) : t('Elige tu nombre')}
             </Button>
             {canJoin && (
               <p className="text-center text-xs text-ink-500">
                 {twoSteps
-                  ? '2 firmas en Freighter: compartir tu nombre con el grupo y unirte.'
-                  : '1 firma en Freighter para unirte.'}
+                  ? t('2 firmas en Freighter: compartir tu nombre con el grupo y unirte.')
+                  : t('1 firma en Freighter para unirte.')}
               </p>
             )}
           </>
@@ -178,9 +181,9 @@ function JoinProgress({ step, twoSteps }: { step: Step; twoSteps: boolean }) {
   if (step.s === 'done')
     return (
       <div className="rounded-xl bg-pos-50 p-3 text-sm text-pos-700">
-        ✓ ¡Ya estás dentro!{step.nameShared ? '' : ' (tu nombre solo se ve en este dispositivo)'}{' '}
+        ✓ {t('¡Ya estás dentro!')}{step.nameShared ? '' : t(' (tu nombre solo se ve en este dispositivo)')}{' '}
         <a href={explorerTxUrl(step.joinHash)} target="_blank" rel="noreferrer" className="font-semibold underline">
-          Ver en stellar.expert ↗
+          {t('Ver en stellar.expert ↗')}
         </a>
       </div>
     )
@@ -188,12 +191,12 @@ function JoinProgress({ step, twoSteps }: { step: Step; twoSteps: boolean }) {
     <div className="space-y-1 rounded-xl bg-brand-50 p-3 text-sm text-brand-800">
       {twoSteps && (
         <div className="flex items-center gap-2">
-          {step.s === 'name' ? <Spinner /> : <span>✓</span>} 1/2 Compartiendo tu nombre…
+          {step.s === 'name' ? <Spinner /> : <span>✓</span>} {t('1/2 Compartiendo tu nombre…')}
         </div>
       )}
       {step.s === 'join' && (
         <div className="flex items-center gap-2">
-          <Spinner /> {twoSteps ? '2/2 ' : ''}Uniéndote al grupo…
+          <Spinner /> {twoSteps ? '2/2 ' : ''}{t('Uniéndote al grupo…')}
         </div>
       )}
     </div>

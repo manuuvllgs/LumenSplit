@@ -14,6 +14,7 @@ import { BASE_FEE, Horizon, Networks, Operation, TransactionBuilder } from '@ste
 import { signTransaction } from '@stellar/freighter-api'
 import { LumenSplitError } from './errors'
 import type { Address, TxOptions, TxResult } from './lumensplit'
+import { t } from '../i18n'
 
 export const NAME_KEY = 'lumensplit.name'
 export const MAX_NAME_LENGTH = 24
@@ -61,7 +62,7 @@ async function accountExists(address: Address): Promise<boolean> {
 export async function ensureFunded(address: Address): Promise<boolean> {
   if (IS_MOCK || (await accountExists(address))) return false
   if (PASSPHRASE !== Networks.TESTNET) {
-    throw new LumenSplitError('Tu cuenta aún no tiene XLM. Envíale algunos para activarla.')
+    throw new LumenSplitError(t('Tu cuenta aún no tiene XLM. Envíale algunos para activarla.'))
   }
   await fetch(`${FRIENDBOT_URL}/?addr=${encodeURIComponent(address)}`).catch(() => null)
   // Friendbot answers once the ledger closes; poll briefly in case it is slow.
@@ -69,7 +70,7 @@ export async function ensureFunded(address: Address): Promise<boolean> {
     if (await accountExists(address)) return true
     await new Promise((r) => setTimeout(r, 1000))
   }
-  throw new LumenSplitError('No pudimos activar tu cuenta de pruebas. Inténtalo de nuevo en unos segundos.')
+  throw new LumenSplitError(t('No pudimos activar tu cuenta de pruebas. Inténtalo de nuevo en unos segundos.'))
 }
 
 /** The name `address` published on its account, or null if none (or the account doesn't exist yet). */
@@ -85,9 +86,9 @@ export async function fetchName(address: Address): Promise<string | null> {
 
 export function validateName(name: string): string | null {
   const v = name.trim()
-  if (!v) return 'Escribe un nombre.'
-  if (v.length > MAX_NAME_LENGTH) return `Máximo ${MAX_NAME_LENGTH} caracteres.`
-  if (new TextEncoder().encode(v).length > 64) return 'Nombre demasiado largo.'
+  if (!v) return t('Escribe un nombre.')
+  if (v.length > MAX_NAME_LENGTH) return t('Máximo {n} caracteres.', { n: MAX_NAME_LENGTH })
+  if (new TextEncoder().encode(v).length > 64) return t('Nombre demasiado largo.')
   return null
 }
 

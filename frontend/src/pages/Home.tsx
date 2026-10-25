@@ -3,6 +3,7 @@ import { listMyGroups } from '../lib/lumensplit'
 import { useWallet } from '../wallet'
 import { useAsync } from '../useAsync'
 import { Avatar, Button, Card, ErrorBox, Loading } from '../components/ui'
+import { t } from '../i18n'
 
 export default function Home() {
   const { address, connect, connecting, activating, error } = useWallet()
@@ -11,15 +12,15 @@ export default function Home() {
     return (
       <div className="pt-10 text-center">
         <h1 className="font-display text-4xl font-bold leading-tight tracking-tight text-ink-900">
-          Divide gastos con amigos.
+          {t('Divide gastos con amigos.')}
           <br />
-          <span className="text-brand-600">Salda cuentas en segundos.</span>
+          <span className="text-brand-600">{t('Salda cuentas en segundos.')}</span>
         </h1>
         <p className="mx-auto mt-4 max-w-xs text-ink-500">
-          Como Tricount, pero cuando toca pagar el dinero llega al momento, desde cualquier país y por menos de un céntimo.
+          {t('Una forma nueva de compartir gastos, construida sobre la blockchain de Stellar: pagos que llegan en segundos a cualquier país, comisiones de menos de un céntimo y un registro compartido que nadie puede alterar.')}
         </p>
         <Button className="mt-8 w-full py-3 text-base" onClick={connect} loading={connecting}>
-          {activating ? 'Activando tu cuenta de pruebas…' : 'Conectar Freighter'}
+          {activating ? t('Activando tu cuenta de pruebas…') : t('Conectar Freighter')}
         </Button>
         {error && (
           <div className="mt-4">
@@ -27,11 +28,11 @@ export default function Home() {
           </div>
         )}
         <p className="mt-4 text-xs text-ink-400">
-          ¿No tienes Freighter?{' '}
+          {t('¿No tienes Freighter?')}{' '}
           <a href="https://www.freighter.app/" target="_blank" rel="noreferrer" className="underline">
-            Instálalo aquí
+            {t('Instálalo aquí')}
           </a>{' '}
-          y cambia a Testnet.
+          {t('y cambia a Testnet.')}
         </p>
       </div>
     )
@@ -46,17 +47,17 @@ function GroupList({ address }: { address: string }) {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold">Mis grupos</h1>
+        <h1 className="text-xl font-bold">{t('Mis grupos')}</h1>
         <Link to="/new">
-          <Button>+ Nuevo grupo</Button>
+          <Button>{t('+ Nuevo grupo')}</Button>
         </Link>
       </div>
       {loading && !groups && <Loading />}
       {error && <ErrorBox message={error} />}
       {groups && groups.length === 0 && (
         <Card className="py-10 text-center text-ink-500">
-          Aún no tienes grupos. <br />
-          Crea uno para empezar a dividir gastos.
+          {t('Aún no tienes grupos.')} <br />
+          {t('Crea uno para empezar a dividir gastos.')}
         </Card>
       )}
       <ul className="space-y-3">
@@ -67,7 +68,7 @@ function GroupList({ address }: { address: string }) {
                 <div className="flex-1">
                   <div className="font-semibold">{g.name}</div>
                   <div className="text-xs text-ink-500">
-                    {g.members.length} miembros · grupo #{g.id}
+                    {t('{n} miembros · grupo #{id}', { n: g.members.length, id: g.id })}
                   </div>
                 </div>
                 <div className="flex -space-x-2">

@@ -5,6 +5,7 @@ import { getPendingNames, setPendingNames } from '../lib/aliases'
 import { withPendingNames } from '../lib/inviteLink'
 import { useTx } from '../useTx'
 import { Button, TxStatus } from './ui'
+import { t } from '../i18n'
 
 /**
  * "Invitar amigos": creates an invite (one signature) and shows link + QR.
@@ -83,26 +84,26 @@ export function InviteModal({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Invitar amigos"
+        aria-label={t('Invitar amigos')}
         className="max-h-[90vh] w-full max-w-sm space-y-4 overflow-y-auto rounded-2xl bg-white p-5 shadow-sm"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h2 className="text-lg font-bold">Invitar amigos</h2>
+            <h2 className="text-lg font-bold">{t('Invitar amigos')}</h2>
             <p className="text-sm text-ink-500">
-              Quien abra el enlace elige su nombre y entra en <b>{groupName}</b> con su Freighter.
+              {t('Quien abra el enlace elige su nombre y entra en {group} con su Freighter.', { group: groupName })}
             </p>
           </div>
-          <button onClick={onClose} disabled={busy} className="rounded-lg p-1 text-ink-400 hover:bg-ink-100" aria-label="Cerrar">
+          <button onClick={onClose} disabled={busy} className="rounded-lg p-1 text-ink-400 hover:bg-ink-100" aria-label={t('Cerrar')}>
             ✕
           </button>
         </div>
 
         <div>
-          <div className="text-xs font-semibold uppercase tracking-wide text-ink-500">Faltan por unirse</div>
+          <div className="text-xs font-semibold uppercase tracking-wide text-ink-500">{t('Faltan por unirse')}</div>
           <div className="mt-1 flex flex-wrap gap-1.5">
-            {pending.length === 0 && <span className="text-sm text-ink-400">Nadie. Añade nombres o comparte el enlace tal cual.</span>}
+            {pending.length === 0 && <span className="text-sm text-ink-400">{t('Nadie. Añade nombres o comparte el enlace tal cual.')}</span>}
             {pending.map((n) => (
               <span key={n} className="flex items-center gap-1 rounded-full bg-brand-50 py-1 pr-1.5 pl-3 text-sm font-semibold text-brand-800">
                 {n}
@@ -110,7 +111,7 @@ export function InviteModal({
                   type="button"
                   onClick={() => updatePending(pending.filter((p) => p !== n))}
                   className="rounded-full px-1 text-brand-600 hover:bg-brand-100"
-                  aria-label={`Quitar ${n}`}
+                  aria-label={t('Quitar {name}', { name: n })}
                 >
                   ✕
                 </button>
@@ -122,11 +123,11 @@ export function InviteModal({
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               maxLength={24}
-              placeholder="Añadir nombre"
+              placeholder={t('Añadir nombre')}
               className="min-w-0 flex-1 rounded-xl border border-ink-200 px-3 py-1.5 text-sm"
             />
             <Button type="submit" variant="secondary" className="py-1.5!" disabled={!newName.trim()}>
-              Añadir
+              {t('Añadir')}
             </Button>
           </form>
         </div>
@@ -143,27 +144,27 @@ export function InviteModal({
                 onFocus={(e) => e.currentTarget.select()}
                 className="min-w-0 flex-1 rounded-xl border border-ink-200 px-3 py-2 font-mono text-xs"
               />
-              <Button onClick={copy}>{copied ? '¡Copiado!' : 'Copiar'}</Button>
+              <Button onClick={copy}>{copied ? t('¡Copiado!') : t('Copiar')}</Button>
             </div>
             {canShare && (
               <Button
                 variant="secondary"
                 className="w-full"
-                onClick={() => navigator.share({ title: `Únete a ${groupName} en LumenSplit`, url: link }).catch(() => {})}
+                onClick={() => navigator.share({ title: t('Únete a {group} en LumenSplit', { group: groupName }), url: link }).catch(() => {})}
               >
-                Compartir…
+                {t('Compartir…')}
               </Button>
             )}
             <p className="text-xs text-ink-500">
-              El enlace vale para todo el grupo. Si generas uno nuevo, el anterior deja de funcionar.{' '}
+              {t('El enlace vale para todo el grupo. Si generas uno nuevo, el anterior deja de funcionar.')}{' '}
               <button onClick={generate} disabled={busy} className="font-semibold text-brand-700 underline">
-                Generar otro
+                {t('Generar otro')}
               </button>
             </p>
           </>
         ) : (
           <Button className="w-full py-3" onClick={generate} loading={busy}>
-            Crear enlace de invitación
+            {t('Crear enlace de invitación')}
           </Button>
         )}
         {state.status !== 'done' && <TxStatus state={state} />}

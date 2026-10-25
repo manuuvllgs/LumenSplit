@@ -23,6 +23,7 @@ import {
   TransactionBuilder,
 } from "@stellar/stellar-sdk";
 import { signTransaction } from "@stellar/freighter-api";
+import { t } from "../i18n";
 
 export const HORIZON_URL: string =
   import.meta.env.VITE_HORIZON_URL ?? "https://horizon-testnet.stellar.org";
@@ -83,7 +84,7 @@ export async function quotePayIn(asset: PayAsset, xlmAmount: string): Promise<Qu
   const src = toAsset(asset);
   const res = await horizon.strictReceivePaths([src], Asset.native(), xlmAmount).call();
   if (res.records.length === 0) {
-    throw new Error(`No route found to pay in ${asset.code} right now.`);
+    throw new Error(t('No hay ruta para pagar en {code} ahora mismo.', { code: asset.code }));
   }
   const best = res.records.reduce((a, b) =>
     Number(b.source_amount) < Number(a.source_amount) ? b : a,
@@ -145,7 +146,7 @@ export async function swapToXlm(
     address,
   });
   if (signed.error) {
-    throw new Error(signed.error.message ?? "Transaction cancelled in Freighter.");
+    throw new Error(signed.error.message ?? t('Has cancelado la transacción en Freighter.'));
   }
 
   try {
@@ -157,14 +158,14 @@ export async function swapToXlm(
     const codes = (e as { response?: { data?: { extras?: { result_codes?: { operations?: string[] } } } } })
       ?.response?.data?.extras?.result_codes?.operations ?? [];
     if (codes.includes("op_over_source_max")) {
-      throw new Error("The price moved. Get a new quote and try again.");
+      throw new Error(t('El precio ha cambiado. Pide un nuevo precio e inténtalo de nuevo.'));
     }
     if (codes.includes("op_underfunded")) {
-      throw new Error(`Not enough ${asset.code} in your wallet.`);
+      throw new Error(t('No tienes suficiente {code} en tu cuenta.', { code: asset.code }));
     }
     if (codes.includes("op_too_few_offers")) {
-      throw new Error(`Not enough liquidity to pay in ${asset.code} right now.`);
+      throw new Error(t('No hay liquidez suficiente para pagar en {code} ahora mismo.', { code: asset.code }));
     }
-    throw new Error(codes.length ? `Payment failed: ${codes.join(", ")}` : String(e));
+    throw new Error(codes.length ? t('El pago ha fallado: {codes}', { codes: codes.join(", ") }) : String(e));
   }
 }

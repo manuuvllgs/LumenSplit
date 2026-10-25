@@ -6,6 +6,7 @@ import { useWallet } from '../wallet'
 import { useAsync } from '../useAsync'
 import { useTx } from '../useTx'
 import { Avatar, Button, Card, ErrorBox, Loading, MemberName, PageHeader, TxStatus } from '../components/ui'
+import { t } from '../i18n'
 
 type Mode = 'equal' | 'custom'
 
@@ -26,7 +27,7 @@ export default function AddExpense() {
   }, [group])
 
   if (loading && !group) return <Loading />
-  if (error || !group) return <ErrorBox message={error ?? 'No se pudo cargar el grupo'} />
+  if (error || !group) return <ErrorBox message={error ?? t('No se pudo cargar el grupo')} />
 
   const participants = group.members.filter((m) => selected.has(m))
 
@@ -82,20 +83,20 @@ export default function AddExpense() {
 
   return (
     <form onSubmit={submit}>
-      <PageHeader title="Añadir gasto" back={`/g/${id}`} />
+      <PageHeader title={t('Añadir gasto')} back={`/g/${id}`} />
       <Card className="space-y-4">
         <label className="block">
-          <span className="text-sm font-medium text-ink-700">Descripción</span>
+          <span className="text-sm font-medium text-ink-700">{t('Descripción')}</span>
           <input
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Cena, taxi, entradas…"
+            placeholder={t('Cena, taxi, entradas…')}
             maxLength={60}
             className="mt-1 w-full rounded-xl border border-ink-200 px-3 py-2.5 focus:border-brand-600 focus:outline-none"
           />
         </label>
 
-        <div role="radiogroup" aria-label="Tipo de reparto" className="grid grid-cols-2 gap-1 rounded-xl bg-ink-100 p-1">
+        <div role="radiogroup" aria-label={t('Tipo de reparto')} className="grid grid-cols-2 gap-1 rounded-xl bg-ink-100 p-1">
           {(
             [
               ['equal', 'A partes iguales'],
@@ -112,14 +113,14 @@ export default function AddExpense() {
                 mode === m ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-500 hover:text-ink-700'
               }`}
             >
-              {text}
+              {t(text)}
             </button>
           ))}
         </div>
 
         {mode === 'equal' ? (
           <label className="block">
-            <span className="text-sm font-medium text-ink-700">Importe</span>
+            <span className="text-sm font-medium text-ink-700">{t('Importe')}</span>
             <div className="mt-1 flex items-center rounded-xl border border-ink-200 focus-within:border-brand-600">
               <input
                 value={amountStr}
@@ -130,31 +131,31 @@ export default function AddExpense() {
               />
               <span className="pr-3 text-sm font-semibold text-ink-500">{TOKEN_SYMBOL}</span>
             </div>
-            {amountStr && !amount && <p className="mt-1 text-xs text-neg-600">Importe no válido (máx. 7 decimales).</p>}
+            {amountStr && !amount && <p className="mt-1 text-xs text-neg-600">{t('Importe no válido (máx. 7 decimales).')}</p>}
           </label>
         ) : (
           <div className="flex items-baseline justify-between rounded-xl bg-ink-50 px-3 py-2.5">
-            <span className="text-sm font-medium text-ink-700">Total</span>
+            <span className="text-sm font-medium text-ink-700">{t('Total')}</span>
             <span className="font-display text-lg font-bold tabular-nums">{formatAmount(customTotal)}</span>
           </div>
         )}
 
         <div>
-          <span className="text-sm font-medium text-ink-700">Pagado por</span>
-          <div className="mt-1 rounded-xl bg-ink-50 px-3 py-2 text-sm font-medium">Tú</div>
+          <span className="text-sm font-medium text-ink-700">{t('Pagado por')}</span>
+          <div className="mt-1 rounded-xl bg-ink-50 px-3 py-2 text-sm font-medium">{t('Tú')}</div>
         </div>
 
         <div>
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-ink-700">
-              {mode === 'equal' ? 'Se reparte entre' : '¿Cuánto pone cada uno?'}
+              {mode === 'equal' ? t('Se reparte entre') : t('¿Cuánto pone cada uno?')}
             </span>
             <button
               type="button"
               className="text-xs font-semibold text-brand-700"
               onClick={() => setSelected(selected.size === group.members.length ? new Set() : new Set(group.members))}
             >
-              {selected.size === group.members.length ? 'Ninguno' : 'Todos'}
+              {selected.size === group.members.length ? t('Ninguno') : t('Todos')}
             </button>
           </div>
           <div className="mt-1 divide-y divide-ink-100 rounded-xl ring-1 ring-ink-100">
@@ -180,7 +181,7 @@ export default function AddExpense() {
                       onChange={(e) => setCustom((c) => ({ ...c, [m]: e.target.value }))}
                       inputMode="decimal"
                       placeholder="0,00"
-                      aria-label="Importe de esta persona"
+                      aria-label={t('Importe de esta persona')}
                       className={`w-24 rounded-lg border px-2 py-1.5 text-right text-sm font-semibold tabular-nums focus:outline-none ${
                         bad ? 'border-neg-600' : 'border-ink-200 focus:border-brand-600'
                       }`}
@@ -191,14 +192,14 @@ export default function AddExpense() {
             })}
           </div>
           {mode === 'custom' && participants.length > 0 && !customValid && (
-            <p className="mt-1 text-xs text-ink-500">Pon un importe mayor que 0 a cada persona marcada.</p>
+            <p className="mt-1 text-xs text-ink-500">{t('Pon un importe mayor que 0 a cada persona marcada.')}</p>
           )}
         </div>
       </Card>
       <div className="mt-4 space-y-3">
-        <TxStatus state={state} successText="Gasto añadido" />
+        <TxStatus state={state} successText={t('Gasto añadido')} />
         <Button type="submit" className="w-full py-3" disabled={!canSubmit} loading={busy}>
-          Guardar gasto{mode === 'custom' && customValid ? ` · ${formatAmount(customTotal)}` : ''}
+          {t('Guardar gasto')}{mode === 'custom' && customValid ? ` · ${formatAmount(customTotal)}` : ''}
         </Button>
       </div>
     </form>

@@ -4,6 +4,7 @@ import { setMyName, useMyName } from '../lib/aliases'
 import { MAX_NAME_LENGTH, validateName } from '../lib/profile'
 import { useWallet } from '../wallet'
 import { Button, Card, KeyHint, Loading } from './ui'
+import { t } from '../i18n'
 
 const SKIP_KEY = 'lumensplit.skipName'
 
@@ -21,7 +22,7 @@ export function NameGate({ children }: { children: ReactNode }) {
   })
 
   // The join page asks for the name itself (from the group's list).
-  if (!address || pathname.startsWith('/join/') || skipped) return children
+  if (!address || pathname.startsWith('/join/') || pathname === '/faq' || skipped) return children
   if (name === undefined) return <Loading />
   if (name === null)
     return (
@@ -53,10 +54,9 @@ function NameSetup({ address, onSkip }: { address: string; onSkip: () => void })
   return (
     <form onSubmit={save} className="space-y-5 pt-8 text-center">
       <div className="text-4xl">👋</div>
-      <h1 className="text-3xl font-bold">¿Cómo te llamas?</h1>
+      <h1 className="text-3xl font-bold">{t('¿Cómo te llamas?')}</h1>
       <p className="mx-auto max-w-xs text-sm text-ink-500">
-        Es el nombre que verán tus amigos en lugar de tu dirección. Se guarda en este dispositivo y lo compartimos con
-        tus grupos cuando creas uno o te unes.
+        {t('Es el nombre que verán tus amigos en lugar de tu dirección. Se guarda en este dispositivo y lo compartimos con tus grupos cuando creas uno o te unes.')}
       </p>
       <Card className="space-y-3 text-left">
         <input
@@ -68,16 +68,16 @@ function NameSetup({ address, onSkip }: { address: string; onSkip: () => void })
           className="w-full rounded-xl border border-ink-200 px-3 py-3 text-lg font-semibold focus:border-brand-600 focus:outline-none"
         />
         <div className="flex items-center justify-between text-xs text-ink-500">
-          <span>Tu cuenta</span>
+          <span>{t('Tu cuenta')}</span>
           <KeyHint address={address} />
         </div>
         {invalid && <p className="text-xs text-neg-600">{invalid}</p>}
         <Button type="submit" className="w-full py-3" disabled={!draft.trim() || !!invalid}>
-          Continuar
+          {t('Continuar')}
         </Button>
       </Card>
       <button type="button" onClick={onSkip} className="text-sm text-ink-500 underline">
-        Ahora no
+        {t('Ahora no')}
       </button>
     </form>
   )
