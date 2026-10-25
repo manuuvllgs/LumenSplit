@@ -12,9 +12,9 @@ use soroban_sdk::{
     Map, String, Vec,
 };
 
-const DAY_IN_LEDGERS: u32 = 17_280;
-const TTL_THRESHOLD: u32 = 30 * DAY_IN_LEDGERS;
-const TTL_EXTEND_TO: u32 = 90 * DAY_IN_LEDGERS;
+// Storage lifetime: new entries get the network's minimum TTL on creation.
+// We do not extend TTL on every write, because rent is paid up front on each
+// extension and that made group creation very expensive on testnet.
 
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
@@ -130,9 +130,6 @@ impl LumenSplit {
             .unwrap_or(0u32)
             + 1;
         env.storage().instance().set(&DataKey::GroupCount, &id);
-        env.storage()
-            .instance()
-            .extend_ttl(TTL_THRESHOLD, TTL_EXTEND_TO);
 
         let mut balances: Map<Address, i128> = Map::new(&env);
         for m in members.iter() {
@@ -344,9 +341,6 @@ impl LumenSplit {
 
     fn save<V: soroban_sdk::IntoVal<Env, soroban_sdk::Val>>(env: &Env, key: &DataKey, value: &V) {
         env.storage().persistent().set(key, value);
-        env.storage()
-            .persistent()
-            .extend_ttl(key, TTL_THRESHOLD, TTL_EXTEND_TO);
     }
 
     fn load_group(env: &Env, id: u32) -> Result<Group, Error> {
