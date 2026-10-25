@@ -6,7 +6,7 @@ import { Avatar, Button, Card, ErrorBox, Icon, Loading } from '../components/ui'
 import { t } from '../i18n'
 
 export default function Home() {
-  const { address, connect, connecting, activating, error } = useWallet()
+  const { address, connect, connectPasskey, connecting, activating, error } = useWallet()
 
   if (!address) {
     return (
@@ -39,6 +39,13 @@ export default function Home() {
               </a>{' '}
               {t('y cambia a Testnet.')}
             </p>
+          </div>
+          {/* Passkey smart accounts (Nido): Face ID / fingerprint, no extension. */}
+          <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Button variant="secondary" className="w-full sm:w-auto sm:px-8" onClick={connectPasskey} loading={connecting}>
+              {t('Entrar con passkey')}
+            </Button>
+            <p className="text-sm text-ink-500">{t('Face ID o huella, sin extensiones ni frases semilla · con Nido')}</p>
           </div>
           {error && (
             <div className="mt-4">

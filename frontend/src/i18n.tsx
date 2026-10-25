@@ -77,6 +77,25 @@ const DICT: Record<string, { en: string; pt: string }> = {
   },
   'Idioma': { en: 'Language', pt: 'Idioma' },
   'Volver': { en: 'Back', pt: 'Voltar' },
+  // Passkey accounts (Nido)
+  'Entrar con passkey': { en: 'Sign in with a passkey', pt: 'Entrar com passkey' },
+  'Face ID o huella, sin extensiones ni frases semilla · con Nido': {
+    en: 'Face ID or fingerprint, no extension, no seed phrase · with Nido',
+    pt: 'Face ID ou impressão digital, sem extensões nem frases-semente · com Nido',
+  },
+  'Autoriza LumenSplit una vez': { en: 'Authorise LumenSplit once', pt: 'Autorize o LumenSplit uma vez' },
+  'Tu cuenta con passkey necesita darle permiso a la app: podrá gestionar tus grupos y pagar tus deudas en XLM, hasta {cap} XLM al día, durante 7 días. Lo confirmas con tu passkey en Nido y vuelves aquí.': {
+    en: 'Your passkey account needs to give the app permission: it will be able to manage your groups and pay your debts in XLM, up to {cap} XLM a day, for 7 days. You confirm it with your passkey on Nido and come back here.',
+    pt: 'A sua conta com passkey precisa de dar permissão à app: poderá gerir os seus grupos e pagar as suas dívidas em XLM, até {cap} XLM por dia, durante 7 dias. Confirma com a sua passkey no Nido e volta aqui.',
+  },
+  'Autorizar en Nido': { en: 'Authorise on Nido', pt: 'Autorizar no Nido' },
+  'Renovar el permiso en Nido': { en: 'Renew the permission on Nido', pt: 'Renovar a permissão no Nido' },
+  'Comprobar de nuevo': { en: 'Check again', pt: 'Verificar de novo' },
+  'Esperando la confirmación de Nido…': { en: 'Waiting for Nido to confirm…', pt: 'À espera da confirmação do Nido…' },
+  'Autoriza LumenSplit en Nido para poder hacer esto.': {
+    en: 'Authorise LumenSplit on Nido to do this.',
+    pt: 'Autorize o LumenSplit no Nido para fazer isto.',
+  },
   'Valor aproximado en euros al precio actual del XLM': {
     en: 'Approximate value in euros at the current XLM price',
     pt: 'Valor aproximado em euros ao preço atual do XLM',

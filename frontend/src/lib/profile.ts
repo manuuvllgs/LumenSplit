@@ -15,6 +15,7 @@ import { signTransaction } from '@stellar/freighter-api'
 import { LumenSplitError } from './errors'
 import type { Address, TxOptions, TxResult } from './lumensplit'
 import { t } from '../i18n'
+import { isSmartAccount } from './nido'
 
 export const NAME_KEY = 'lumensplit.name'
 export const MAX_NAME_LENGTH = 24
@@ -60,7 +61,8 @@ async function accountExists(address: Address): Promise<boolean> {
  * funded with Friendbot (free test XLM). Returns true if it had to be activated.
  */
 export async function ensureFunded(address: Address): Promise<boolean> {
-  if (IS_MOCK || (await accountExists(address))) return false
+  // Passkey smart accounts (C…) arrive funded by Nido and have no classic account.
+  if (IS_MOCK || isSmartAccount(address) || (await accountExists(address))) return false
   if (PASSPHRASE !== Networks.TESTNET) {
     throw new LumenSplitError(t('Tu cuenta aún no tiene XLM. Envíale algunos para activarla.'))
   }
@@ -76,6 +78,8 @@ export async function ensureFunded(address: Address): Promise<boolean> {
 /** The name `address` published on its account, or null if none (or the account doesn't exist yet). */
 export async function fetchName(address: Address): Promise<string | null> {
   if (IS_MOCK) return mockNames()[address] ?? null
+  // A smart account has no classic account to hold data entries.
+  if (isSmartAccount(address)) return null
   const res = await fetch(`${HORIZON_URL}/accounts/${address}`)
   if (res.status === 404) return null
   if (!res.ok) throw new Error(`Horizon ${res.status}`)
