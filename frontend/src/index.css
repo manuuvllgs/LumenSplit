@@ -1,0 +1,32 @@
+@import 'tailwindcss';
+
+/* Design tokens — person 3 can retune the whole app from here. */
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --color-brand-50: #eef4ff;
+  --color-brand-100: #dbe6ff;
+  --color-brand-600: #3b5bdb;
+  --color-brand-700: #2f4ac0;
+  --color-brand-800: #263c99;
+
+  --color-ink-50: #f7f8fa;
+  --color-ink-100: #eef0f4;
+  --color-ink-200: #dde1e8;
+  --color-ink-400: #98a1b3;
+  --color-ink-500: #6b7489;
+  --color-ink-700: #3a4256;
+  --color-ink-900: #141a2b;
+
+  --color-pos-50: #ecfdf3;
+  --color-pos-600: #16a34a;
+  --color-pos-700: #15803d;
+
+  --color-neg-50: #fef2f2;
+  --color-neg-600: #dc2626;
+  --color-neg-700: #b91c1c;
+}
+
+body {
+  @apply bg-ink-50 font-sans text-ink-900 antialiased;
+}
