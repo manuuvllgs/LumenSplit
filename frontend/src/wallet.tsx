@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
+import { WatchWalletChanges } from '@stellar/freighter-api'
 import { connectWallet, setActiveAddress, type Address } from './lib/lumensplit'
 import { humanizeError } from './lib/errors'
 
@@ -48,6 +49,24 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       setConnecting(false)
     }
   }, [])
+
+  // Follow account switches in Freighter: without this the app keeps acting as
+  // the previous account (e.g. /join says "already a member").
+  useEffect(() => {
+    if (!address) return
+    const watcher = new WatchWalletChanges(1000)
+    watcher.watch(({ address: next }) => {
+      if (!next || next === address) return
+      setActiveAddress(next)
+      setAddress(next)
+      try {
+        localStorage.setItem(KEY, next)
+      } catch {
+        /* ignore */
+      }
+    })
+    return () => watcher.stop()
+  }, [address])
 
   const disconnect = useCallback(() => {
     setActiveAddress(null)
