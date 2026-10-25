@@ -26,10 +26,10 @@ export default function GroupDetail() {
     <div className="space-y-5">
       <PageHeader title={group.name} back="/" />
 
-      <Card className="bg-gradient-to-br from-brand-600 to-brand-800 text-white ring-0">
+      <Card className="bg-ink-900! text-white ring-0!">
         <div className="text-sm opacity-80">Tu saldo</div>
-        <div className="mt-1 text-3xl font-extrabold tabular-nums">
-          {mine === 0n ? 'Estás en paz' : <Amount value={mine} signed className="text-white!" />}
+        <div className="mt-1 font-display text-4xl font-bold tabular-nums">
+          {mine === 0n ? 'Estás en paz' : <Amount value={mine} signed className={mine > 0n ? 'text-[#4ade80]!' : 'text-[#ff8a80]!'} />}
         </div>
         <div className="mt-1 text-sm opacity-80">
           {mine > 0n ? 'Te deben dinero' : mine < 0n ? 'Debes dinero' : 'No debes nada'} · Gasto total{' '}
@@ -43,7 +43,7 @@ export default function GroupDetail() {
         </Link>
         {unsettled ? (
           <Link to={`/g/${id}/settle`}>
-            <Button variant="secondary" className="w-full">
+            <Button variant="accent" className="w-full">
               Saldar cuentas
             </Button>
           </Link>

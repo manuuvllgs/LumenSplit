@@ -14,8 +14,8 @@ function Shell({ children }: { children: ReactNode }) {
   return (
     <div className="mx-auto min-h-screen max-w-md px-4 pb-16">
       <header className="flex items-center justify-between py-4">
-        <Link to="/" className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-ink-900">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white">✦</span>
+        <Link to="/" className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-ink-900">
+          <img src="/logo-mark.svg" alt="" className="h-8 w-8" />
           LumenSplit
         </Link>
         <div className="flex items-center gap-2">
