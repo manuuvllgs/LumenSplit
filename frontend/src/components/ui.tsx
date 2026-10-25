@@ -1,8 +1,8 @@
 import { useState, type ButtonHTMLAttributes, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { setChosenName, useNames } from '../lib/aliases'
+import { publishMyNameIfNeeded, setMyName, useNames } from '../lib/aliases'
 import { humanizeError } from '../lib/errors'
-import { MAX_NAME_LENGTH, saveMyName, validateName } from '../lib/profile'
+import { MAX_NAME_LENGTH, validateName } from '../lib/profile'
 import { explorerTxUrl, formatAmount, shortAddress } from '../lib/format'
 import type { TxState } from '../useTx'
 
@@ -106,14 +106,14 @@ export function MemberName({ address, me, editable = false }: { address: string;
     if (!me || draft.trim() === (name ?? '')) return setEditing(false)
     const invalid = validateName(draft)
     if (invalid) return setError(invalid)
+    setMyName(me, draft)
     setSaving(true)
     setError(null)
     try {
-      await saveMyName(me, draft)
-      setChosenName(me, draft)
+      await publishMyNameIfNeeded(me)
       setEditing(false)
     } catch (e) {
-      setError(humanizeError(e))
+      setError(`Guardado solo en este dispositivo. ${humanizeError(e)}`)
     } finally {
       setSaving(false)
     }

@@ -1,8 +1,14 @@
 /**
- * Each person's display name lives on their OWN Stellar account, as an
- * account data entry (`manageData`, key "lumensplit.name"). Only the owner can
- * set it (one Freighter signature), anyone can read it from Horizon for free,
- * and it needs no contract change. Values are at most 64 bytes.
+ * Names and account activation.
+ *
+ * - Your alias is saved locally first (instant, no signature) — see aliases.ts.
+ * - To let friends see it, it is *published* on your OWN Stellar account as an
+ *   account data entry (`manageData`, key "lumensplit.name"): only the owner can
+ *   write it (one Freighter signature), it is public and readable by anyone
+ *   from Horizon, holds nothing secret, and needs no contract change.
+ * - A brand-new Freighter account does not exist on the network until it gets
+ *   XLM. On testnet we activate it automatically with Friendbot, so it can
+ *   create groups, join and pay.
  */
 import { BASE_FEE, Horizon, Networks, Operation, TransactionBuilder } from '@stellar/stellar-sdk'
 import { signTransaction } from '@stellar/freighter-api'
@@ -17,6 +23,7 @@ const PASSPHRASE = import.meta.env.VITE_NETWORK === 'mainnet' ? Networks.PUBLIC 
 // Same rule as lumensplit.ts (kept local to avoid an import cycle with mock.ts).
 const IS_MOCK = !import.meta.env.VITE_CONTRACT_ID || import.meta.env.VITE_USE_MOCK === 'true'
 const MOCK_KEY = 'lumensplit.mock.names'
+const FRIENDBOT_URL = 'https://friendbot.stellar.org'
 
 function mockNames(): Record<Address, string> {
   try {
@@ -40,7 +47,32 @@ function decodeBase64Utf8(b64: string): string {
   return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)))
 }
 
-/** The name `address` chose for itself, or null if none (or the account doesn't exist yet). */
+async function accountExists(address: Address): Promise<boolean> {
+  const res = await fetch(`${HORIZON_URL}/accounts/${address}`)
+  if (res.status === 404) return false
+  if (!res.ok) throw new Error(`Horizon ${res.status}`)
+  return true
+}
+
+/**
+ * Makes sure the account exists on the network. On testnet, a new account is
+ * funded with Friendbot (free test XLM). Returns true if it had to be activated.
+ */
+export async function ensureFunded(address: Address): Promise<boolean> {
+  if (IS_MOCK || (await accountExists(address))) return false
+  if (PASSPHRASE !== Networks.TESTNET) {
+    throw new LumenSplitError('Tu cuenta aún no tiene XLM. Envíale algunos para activarla.')
+  }
+  await fetch(`${FRIENDBOT_URL}/?addr=${encodeURIComponent(address)}`).catch(() => null)
+  // Friendbot answers once the ledger closes; poll briefly in case it is slow.
+  for (let i = 0; i < 10; i++) {
+    if (await accountExists(address)) return true
+    await new Promise((r) => setTimeout(r, 1000))
+  }
+  throw new LumenSplitError('No pudimos activar tu cuenta de pruebas. Inténtalo de nuevo en unos segundos.')
+}
+
+/** The name `address` published on its account, or null if none (or the account doesn't exist yet). */
 export async function fetchName(address: Address): Promise<string | null> {
   if (IS_MOCK) return mockNames()[address] ?? null
   const res = await fetch(`${HORIZON_URL}/accounts/${address}`)
@@ -59,7 +91,7 @@ export function validateName(name: string): string | null {
   return null
 }
 
-/** Saves the connected account's own name on its Stellar account (one signature). */
+/** Publishes the connected account's name on its own Stellar account (one signature) so friends see it. */
 export async function saveMyName(address: Address, name: string, opts?: TxOptions): Promise<TxResult> {
   const err = validateName(name)
   if (err) throw new LumenSplitError(err)
@@ -74,13 +106,9 @@ export async function saveMyName(address: Address, name: string, opts?: TxOption
     return { hash: Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) => b.toString(16).padStart(2, '0')).join('') }
   }
 
+  await ensureFunded(address)
   const horizon = new Horizon.Server(HORIZON_URL)
-  let account
-  try {
-    account = await horizon.loadAccount(address)
-  } catch {
-    throw new LumenSplitError('Tu cuenta aún no existe en testnet. Fóndeala gratis con Friendbot y vuelve a intentarlo.')
-  }
+  const account = await horizon.loadAccount(address)
   const tx = new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase: PASSPHRASE })
     .addOperation(Operation.manageData({ name: NAME_KEY, value }))
     .setTimeout(120)

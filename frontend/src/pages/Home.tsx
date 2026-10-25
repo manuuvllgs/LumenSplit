@@ -5,7 +5,7 @@ import { useAsync } from '../useAsync'
 import { Avatar, Button, Card, ErrorBox, Loading } from '../components/ui'
 
 export default function Home() {
-  const { address, connect, connecting, error } = useWallet()
+  const { address, connect, connecting, activating, error } = useWallet()
 
   if (!address) {
     return (
@@ -19,7 +19,7 @@ export default function Home() {
           Como Tricount, pero cuando toca pagar el dinero llega al momento, desde cualquier país y por menos de un céntimo.
         </p>
         <Button className="mt-8 w-full py-3 text-base" onClick={connect} loading={connecting}>
-          Conectar Freighter
+          {activating ? 'Activando tu cuenta de pruebas…' : 'Conectar Freighter'}
         </Button>
         {error && (
           <div className="mt-4">

@@ -1,36 +1,63 @@
 /**
- * Display names. Each person picks their own (stored on their Stellar account,
- * see ./profile.ts); this module fetches and caches them for the UI.
- *
- * `hints` are names a group creator typed for an address in this browser; they
- * are only used until that person chooses a name of their own.
+ * Display names, in priority order:
+ * 1. `mine`: the alias YOU chose for your own account(s), stored locally — instant, no signature.
+ * 2. `chosen`: the name each person published on their Stellar account (see ./profile.ts).
+ * 3. `hints`: names a group creator typed for an address on this device.
  */
 import { useEffect, useSyncExternalStore } from 'react'
 import { shortAddress } from './format'
-import { fetchName } from './profile'
+import { fetchName, saveMyName } from './profile'
+import type { TxOptions } from './lumensplit'
 
 const HINTS_KEY = 'lumensplit.aliases'
+const MINE_KEY = 'lumensplit.myNames'
 type Names = Record<string, string>
 
 /** address → chosen name, or null once we know there is none. Missing = not fetched yet. */
 const chosen: Record<string, string | null> = {}
 const inFlight = new Set<string>()
-let hints: Names = readHints()
+let hints: Names = readJson(HINTS_KEY)
+let mine: Names = readJson(MINE_KEY)
 let cache: Names = merge()
 const listeners = new Set<() => void>()
 
-function readHints(): Names {
+function readJson(key: string): Names {
   try {
-    return JSON.parse(localStorage.getItem(HINTS_KEY) || '{}') as Names
+    return JSON.parse(localStorage.getItem(key) || '{}') as Names
   } catch {
     return {}
   }
 }
 
+function writeJson(key: string, value: Names) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value))
+  } catch {
+    /* ignore */
+  }
+}
+
 function merge(): Names {
   const out: Names = { ...hints }
-  for (const [a, n] of Object.entries(chosen)) if (n) out[a] = n // own choice wins
-  return out
+  for (const [a, n] of Object.entries(chosen)) if (n) out[a] = n // their own published choice
+  return { ...out, ...mine } // my alias for myself always wins on my device
+}
+
+/** Saves MY alias for my own account on this device (no signature). */
+export function setMyName(address: string, name: string) {
+  mine = { ...mine, [address]: name.trim() }
+  writeJson(MINE_KEY, mine)
+  notify()
+}
+
+/**
+ * My name: local alias, else the one published on my account. string, null
+ * (none anywhere) or undefined (still checking the network).
+ */
+export function useMyName(address: string | null | undefined): string | null | undefined {
+  const published = useChosenName(address)
+  if (!address) return undefined
+  return mine[address] ?? published
 }
 
 function notify() {
@@ -67,12 +94,13 @@ export function setHint(address: string, name: string) {
   hints = { ...hints }
   if (v) hints[address] = v
   else delete hints[address]
-  try {
-    localStorage.setItem(HINTS_KEY, JSON.stringify(hints))
-  } catch {
-    /* ignore */
-  }
+  writeJson(HINTS_KEY, hints)
   notify()
+}
+
+/** The name published on `address` (no hooks), or undefined if not loaded yet. */
+export function publishedName(address: string): string | null | undefined {
+  return chosen[address]
 }
 
 function subscribe(l: () => void) {
@@ -130,4 +158,18 @@ export function setPendingNames(groupId: number, names: string[]) {
   } catch {
     /* ignore */
   }
+}
+
+/**
+ * Publishes my alias on my Stellar account so friends see it, unless it is
+ * already there. Returns the tx hash, or null if nothing had to be done.
+ */
+export async function publishMyNameIfNeeded(address: string, opts?: TxOptions): Promise<string | null> {
+  const name = mine[address]
+  if (!name) return null
+  if (!(address in chosen)) chosen[address] = await fetchName(address).catch(() => null)
+  if (chosen[address] === name) return null
+  const { hash } = await saveMyName(address, name, opts)
+  setChosenName(address, name)
+  return hash
 }
