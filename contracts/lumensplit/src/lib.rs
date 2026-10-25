@@ -8,8 +8,8 @@
 //! members and updates the ledger atomically.
 
 use soroban_sdk::{
-    contract, contracterror, contractevent, contractimpl, contracttype, token, Address, Env,
-    Map, String, Vec,
+    contract, contracterror, contractevent, contractimpl, contracttype, token, Address, Bytes,
+    BytesN, Env, Map, String, Vec,
 };
 
 // Storage lifetime: new entries get the network's minimum TTL on creation.
@@ -29,6 +29,9 @@ pub enum Error {
     NothingToSettle = 7,
     AmountTooLarge = 8,
     SelfSettlement = 9,
+    AlreadyMember = 10,
+    InvalidInvite = 11,
+    NoInvite = 12,
 }
 
 #[contracttype]
@@ -47,7 +50,17 @@ pub struct Expense {
     pub amount: i128,
     pub description: String,
     pub participants: Vec<Address>,
+    /// What each participant owes for this expense, same order as `participants`.
+    pub shares: Vec<i128>,
     pub timestamp: u64,
+}
+
+/// One person's part of an expense with custom amounts.
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct Share {
+    pub member: Address,
+    pub amount: i128,
 }
 
 /// A suggested transfer that helps clear the group's debts.
@@ -66,6 +79,7 @@ enum DataKey {
     Group(u32),
     Balances(u32),
     Expenses(u32),
+    Invite(u32),
 }
 
 #[contractevent(topics = ["group_created"])]
@@ -90,6 +104,13 @@ pub struct Settled {
     pub from: Address,
     pub to: Address,
     pub amount: i128,
+}
+
+#[contractevent(topics = ["member_joined"])]
+pub struct MemberJoined {
+    #[topic]
+    pub group_id: u32,
+    pub member: Address,
 }
 
 #[contract]
@@ -168,56 +189,53 @@ impl LumenSplit {
     ) -> Result<(), Error> {
         payer.require_auth();
 
-        let group = Self::load_group(&env, group_id)?;
         if amount <= 0 {
             return Err(Error::InvalidAmount);
         }
         if participants.is_empty() {
             return Err(Error::NoParticipants);
         }
-        if !group.members.contains(&payer) {
-            return Err(Error::NotAMember);
-        }
-        for p in participants.iter() {
-            if !group.members.contains(&p) {
-                return Err(Error::NotAMember);
-            }
-        }
 
-        let mut balances = Self::load_balances(&env, group_id)?;
         let n = participants.len() as i128;
-        let share = amount / n;
+        let base = amount / n;
         let remainder = amount % n;
-
-        let paid = balances.get(payer.clone()).unwrap_or(0);
-        balances.set(payer.clone(), paid + amount);
-
-        for (i, p) in participants.iter().enumerate() {
+        let mut shares: Vec<i128> = Vec::new(&env);
+        for i in 0..participants.len() {
             let extra = if (i as i128) < remainder { 1 } else { 0 };
-            let owed = balances.get(p.clone()).unwrap_or(0);
-            balances.set(p, owed - share - extra);
+            shares.push_back(base + extra);
         }
 
-        let mut expenses = Self::load_expenses(&env, group_id)?;
-        expenses.push_back(Expense {
-            payer: payer.clone(),
-            amount,
-            description,
-            participants,
-            timestamp: env.ledger().timestamp(),
-        });
+        Self::record_expense(&env, group_id, payer, description, participants, shares)
+    }
 
-        Self::save(&env, &DataKey::Balances(group_id), &balances);
-        Self::save(&env, &DataKey::Expenses(group_id), &expenses);
+    /// Record an expense where each participant owes a different amount.
+    /// The expense total is the sum of the shares.
+    pub fn add_expense_custom(
+        env: Env,
+        group_id: u32,
+        payer: Address,
+        description: String,
+        shares: Vec<Share>,
+    ) -> Result<(), Error> {
+        payer.require_auth();
 
-        ExpenseAdded {
-            group_id,
-            payer,
-            amount,
+        if shares.is_empty() {
+            return Err(Error::NoParticipants);
         }
-        .publish(&env);
+        let mut participants: Vec<Address> = Vec::new(&env);
+        let mut amounts: Vec<i128> = Vec::new(&env);
+        for s in shares.iter() {
+            if s.amount <= 0 {
+                return Err(Error::InvalidAmount);
+            }
+            if participants.contains(&s.member) {
+                return Err(Error::DuplicateMember);
+            }
+            participants.push_back(s.member);
+            amounts.push_back(s.amount);
+        }
 
-        Ok(())
+        Self::record_expense(&env, group_id, payer, description, participants, amounts)
     }
 
     /// Pay a debt: transfers `amount` of the group's token from `from` to `to`
@@ -232,41 +250,83 @@ impl LumenSplit {
         from.require_auth();
 
         let group = Self::load_group(&env, group_id)?;
-        if from == to {
-            return Err(Error::SelfSettlement);
-        }
-        if amount <= 0 {
-            return Err(Error::InvalidAmount);
-        }
-        if !group.members.contains(&from) || !group.members.contains(&to) {
+        let mut balances = Self::load_balances(&env, group_id)?;
+        Self::apply_settlement(&env, &group, &mut balances, &from, &to, amount)?;
+        Self::save(&env, &DataKey::Balances(group_id), &balances);
+        Ok(())
+    }
+
+    /// Pay every debt `from` has in the group, in one atomic transaction.
+    /// Uses the same plan as `suggest_settlements`, so the user pays exactly
+    /// what the app showed. Returns the transfers made.
+    pub fn settle_all(env: Env, group_id: u32, from: Address) -> Result<Vec<Transfer>, Error> {
+        from.require_auth();
+
+        let group = Self::load_group(&env, group_id)?;
+        if !group.members.contains(&from) {
             return Err(Error::NotAMember);
         }
 
+        let plan = Self::suggest_settlements(env.clone(), group_id)?;
         let mut balances = Self::load_balances(&env, group_id)?;
-        let from_bal = balances.get(from.clone()).unwrap_or(0);
-        let to_bal = balances.get(to.clone()).unwrap_or(0);
-
-        if from_bal >= 0 || to_bal <= 0 {
+        let mut done: Vec<Transfer> = Vec::new(&env);
+        for t in plan.iter() {
+            if t.from == from {
+                Self::apply_settlement(&env, &group, &mut balances, &t.from, &t.to, t.amount)?;
+                done.push_back(t);
+            }
+        }
+        if done.is_empty() {
             return Err(Error::NothingToSettle);
         }
-        if amount > -from_bal || amount > to_bal {
-            return Err(Error::AmountTooLarge);
+
+        Self::save(&env, &DataKey::Balances(group_id), &balances);
+        Ok(done)
+    }
+
+    /// A member creates (or replaces) the group's invitation. Only the SHA-256
+    /// hash of the secret code is stored; the code itself travels in the link.
+    pub fn create_invite(
+        env: Env,
+        group_id: u32,
+        member: Address,
+        code_hash: BytesN<32>,
+    ) -> Result<(), Error> {
+        member.require_auth();
+
+        let group = Self::load_group(&env, group_id)?;
+        if !group.members.contains(&member) {
+            return Err(Error::NotAMember);
+        }
+        Self::save(&env, &DataKey::Invite(group_id), &code_hash);
+        Ok(())
+    }
+
+    /// Join a group with the secret code from an invitation link.
+    pub fn join_group(env: Env, group_id: u32, member: Address, code: Bytes) -> Result<(), Error> {
+        member.require_auth();
+
+        let mut group = Self::load_group(&env, group_id)?;
+        let stored: BytesN<32> = env
+            .storage()
+            .persistent()
+            .get(&DataKey::Invite(group_id))
+            .ok_or(Error::NoInvite)?;
+        let given: BytesN<32> = env.crypto().sha256(&code).into();
+        if given != stored {
+            return Err(Error::InvalidInvite);
+        }
+        if group.members.contains(&member) {
+            return Err(Error::AlreadyMember);
         }
 
-        token::Client::new(&env, &group.token).transfer(&from, &to, &amount);
-
-        balances.set(from.clone(), from_bal + amount);
-        balances.set(to.clone(), to_bal - amount);
+        group.members.push_back(member.clone());
+        let mut balances = Self::load_balances(&env, group_id)?;
+        balances.set(member.clone(), 0);
+        Self::save(&env, &DataKey::Group(group_id), &group);
         Self::save(&env, &DataKey::Balances(group_id), &balances);
 
-        Settled {
-            group_id,
-            from,
-            to,
-            amount,
-        }
-        .publish(&env);
-
+        MemberJoined { group_id, member }.publish(&env);
         Ok(())
     }
 
@@ -329,6 +389,98 @@ impl LumenSplit {
 }
 
 impl LumenSplit {
+    fn record_expense(
+        env: &Env,
+        group_id: u32,
+        payer: Address,
+        description: String,
+        participants: Vec<Address>,
+        shares: Vec<i128>,
+    ) -> Result<(), Error> {
+        let group = Self::load_group(env, group_id)?;
+        if !group.members.contains(&payer) {
+            return Err(Error::NotAMember);
+        }
+        for p in participants.iter() {
+            if !group.members.contains(&p) {
+                return Err(Error::NotAMember);
+            }
+        }
+
+        let mut balances = Self::load_balances(env, group_id)?;
+        let mut amount: i128 = 0;
+        for (i, p) in participants.iter().enumerate() {
+            let share = shares.get_unchecked(i as u32);
+            amount += share;
+            let owed = balances.get(p.clone()).unwrap_or(0);
+            balances.set(p, owed - share);
+        }
+        let paid = balances.get(payer.clone()).unwrap_or(0);
+        balances.set(payer.clone(), paid + amount);
+
+        let mut expenses = Self::load_expenses(env, group_id)?;
+        expenses.push_back(Expense {
+            payer: payer.clone(),
+            amount,
+            description,
+            participants,
+            shares,
+            timestamp: env.ledger().timestamp(),
+        });
+
+        Self::save(env, &DataKey::Balances(group_id), &balances);
+        Self::save(env, &DataKey::Expenses(group_id), &expenses);
+
+        ExpenseAdded {
+            group_id,
+            payer,
+            amount,
+        }
+        .publish(env);
+        Ok(())
+    }
+
+    fn apply_settlement(
+        env: &Env,
+        group: &Group,
+        balances: &mut Map<Address, i128>,
+        from: &Address,
+        to: &Address,
+        amount: i128,
+    ) -> Result<(), Error> {
+        if from == to {
+            return Err(Error::SelfSettlement);
+        }
+        if amount <= 0 {
+            return Err(Error::InvalidAmount);
+        }
+        if !group.members.contains(from) || !group.members.contains(to) {
+            return Err(Error::NotAMember);
+        }
+
+        let from_bal = balances.get(from.clone()).unwrap_or(0);
+        let to_bal = balances.get(to.clone()).unwrap_or(0);
+        if from_bal >= 0 || to_bal <= 0 {
+            return Err(Error::NothingToSettle);
+        }
+        if amount > -from_bal || amount > to_bal {
+            return Err(Error::AmountTooLarge);
+        }
+
+        token::Client::new(env, &group.token).transfer(from, to, &amount);
+        balances.set(from.clone(), from_bal + amount);
+        balances.set(to.clone(), to_bal - amount);
+
+        Settled {
+            group_id: group.id,
+            from: from.clone(),
+            to: to.clone(),
+            amount,
+        }
+        .publish(env);
+        Ok(())
+    }
+
     fn index_of_max(list: &Vec<(Address, i128)>) -> Option<u32> {
         let mut best: Option<(u32, i128)> = None;
         for (i, (_, v)) in list.iter().enumerate() {

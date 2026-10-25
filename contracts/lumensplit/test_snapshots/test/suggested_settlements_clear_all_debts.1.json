@@ -700,6 +700,24 @@
                       },
                       {
                         "key": {
+                          "symbol": "shares"
+                        },
+                        "val": {
+                          "vec": [
+                            {
+                              "i128": "30"
+                            },
+                            {
+                              "i128": "30"
+                            },
+                            {
+                              "i128": "30"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "key": {
                           "symbol": "timestamp"
                         },
                         "val": {
@@ -754,6 +772,24 @@
                       },
                       {
                         "key": {
+                          "symbol": "shares"
+                        },
+                        "val": {
+                          "vec": [
+                            {
+                              "i128": "10"
+                            },
+                            {
+                              "i128": "10"
+                            },
+                            {
+                              "i128": "10"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "key": {
                           "symbol": "timestamp"
                         },
                         "val": {
@@ -801,6 +837,21 @@
                         },
                         "val": {
                           "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK3IM"
+                        }
+                      },
+                      {
+                        "key": {
+                          "symbol": "shares"
+                        },
+                        "val": {
+                          "vec": [
+                            {
+                              "i128": "30"
+                            },
+                            {
+                              "i128": "30"
+                            }
+                          ]
                         }
                       },
                       {
