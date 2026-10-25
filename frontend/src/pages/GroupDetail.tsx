@@ -5,7 +5,7 @@ import { formatAmount, formatDate } from '../lib/format'
 import { useDisplayName } from '../lib/aliases'
 import { useWallet } from '../wallet'
 import { useAsync } from '../useAsync'
-import { Amount, Avatar, Button, Card, ErrorBox, Loading, MemberName, PageHeader } from '../components/ui'
+import { Amount, Avatar, Button, Card, ErrorBox, KeyHint, Loading, MemberName, PageHeader } from '../components/ui'
 import { InviteModal } from '../components/InviteModal'
 
 /** Equal splits differ by at most 1 stroop (remainder), so anything wider is a custom split. */
@@ -127,14 +127,18 @@ export default function GroupDetail() {
                 <div className="min-w-0 flex-1">
                   <div className="truncate font-medium">{e.description}</div>
                   <div className="text-xs text-ink-500">
-                    Pagó {e.payer === me ? 'tú' : name(e.payer)} · {e.participants.length} personas ·{' '}
-                    {formatDate(e.timestamp)}
+                    Pagó <b className="text-ink-900">{e.payer === me ? 'tú' : name(e.payer)}</b> · {e.participants.length}{' '}
+                    personas · {formatDate(e.timestamp)}
                   </div>
+                  <KeyHint address={e.payer} />
                   {isCustomSplit(e) && (
                     <div className="mt-1 flex flex-wrap gap-1">
                       {e.participants.map((p, j) => (
-                        <span key={p} className="rounded-full bg-ink-100 px-2 py-0.5 text-[11px] text-ink-700">
-                          {p === me ? 'Tú' : name(p)} {formatAmount(e.shares![j], false, 2)}
+                        <span key={p} title={p} className="flex flex-col rounded-lg bg-ink-100 px-2 py-0.5 text-[11px] text-ink-700">
+                          <span>
+                            <b className="text-ink-900">{p === me ? 'Tú' : name(p)}</b> {formatAmount(e.shares![j], false, 2)}
+                          </span>
+                          <KeyHint address={p} className="text-[10px]" />
                         </span>
                       ))}
                     </div>

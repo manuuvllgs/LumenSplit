@@ -1,11 +1,23 @@
-/** Local-only nicknames for addresses ("GABC…WXYZ" → "Ana"). Never sent on-chain. */
+/** Nicknames for addresses ("GABC…WXYZ" → "Ana"). Never sent on-chain. */
 import { useSyncExternalStore } from 'react'
 import { shortAddress } from './format'
 
 const KEY = 'lumensplit.aliases'
 type Aliases = Record<string, string>
 
-let cache: Aliases = read()
+/**
+ * Shared names for the team's testnet accounts, so everyone sees the same
+ * people in the demo. Aliases set in the app (✎) are stored locally and win.
+ */
+export const TEAM_ALIASES: Aliases = {
+  GABKS54T7RUHRAOBWQYAX7I3PENWUO47RYH6U2HG4CZ646C4NQQW4V4B: 'Ana',
+  GBD6R4K5CK6NH2AAHZMABLE3DZPK5REOPPECNXZDWAUR3J5FQNHNCGWT: 'Ben',
+  GAB3U3GXL3F5XCKOW5C547CNQNMK6KIO4BGMYYMFJK6HWPKMSLZE5KNJ: 'Carla',
+  GBHYIN3ITX5LGZLEMKWQYVVNZXDAARB5MESOR3UXNXHBCMA7P74VDUWM: 'Dani',
+}
+
+let local: Aliases = read()
+let cache: Aliases = { ...TEAM_ALIASES, ...local }
 const listeners = new Set<() => void>()
 
 function read(): Aliases {
@@ -17,11 +29,12 @@ function read(): Aliases {
 }
 
 export function setAlias(address: string, alias: string) {
-  const next = { ...cache }
+  const next = { ...local }
   const v = alias.trim()
   if (v) next[address] = v
   else delete next[address]
-  cache = next
+  local = next
+  cache = { ...TEAM_ALIASES, ...local }
   try {
     localStorage.setItem(KEY, JSON.stringify(next))
   } catch {

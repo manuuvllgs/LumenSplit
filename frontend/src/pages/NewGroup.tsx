@@ -2,10 +2,10 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createGroup } from '../lib/lumensplit'
 import { setAlias } from '../lib/aliases'
-import { isValidAddress, shortAddress } from '../lib/format'
+import { isValidAddress } from '../lib/format'
 import { useWallet } from '../wallet'
 import { useTx } from '../useTx'
-import { Button, Card, PageHeader, TxStatus } from '../components/ui'
+import { Button, Card, KeyHint, PageHeader, TxStatus } from '../components/ui'
 
 interface Row {
   address: string
@@ -52,8 +52,11 @@ export default function NewGroup() {
 
         <div>
           <span className="text-sm font-medium text-ink-700">Miembros</span>
-          <div className="mt-1 rounded-xl bg-ink-50 px-3 py-2 text-sm text-ink-500">
-            Tú ({me && shortAddress(me)}) se añade automáticamente
+          <div className="mt-1 flex items-center justify-between rounded-xl bg-ink-50 px-3 py-2 text-sm text-ink-500">
+            <span>
+              <b className="text-ink-900">Tú</b> te añades automáticamente
+            </span>
+            {me && <KeyHint address={me} />}
           </div>
           <div className="mt-2 space-y-2">
             {rows.map((r, i) => {
