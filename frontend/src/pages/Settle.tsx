@@ -8,7 +8,7 @@ import { explorerTxUrl, formatAmount, formatDecimalString, toDecimalString, TOKE
 import { useWallet } from '../wallet'
 import { useAsync } from '../useAsync'
 import { useTx } from '../useTx'
-import { Amount, Avatar, Button, Card, ErrorBox, Loading, PageHeader, Spinner, TxStatus } from '../components/ui'
+import { Amount, Avatar, Button, Card, ErrorBox, KeyHint, Loading, PageHeader, Spinner, TxStatus } from '../components/ui'
 
 interface Receipt extends Transfer {
   hash: string
@@ -52,6 +52,7 @@ export default function Settle() {
           <span className="text-pos-700">✓</span>
           <div className="min-w-0 flex-1 text-sm">
             Pagaste <Amount value={r.amount} /> a <b>{label(r.to)}</b>
+            <KeyHint address={r.to} className="block" />
             <div className="text-xs text-ink-500">
               {r.swapHash ? 'en euros · ' : ''}confirmado en{' '}
               {r.seconds.toLocaleString('es-ES', { maximumFractionDigits: 1 })} s
@@ -156,8 +157,11 @@ function SettleAllReceipt({ receipt, label }: { receipt: AllReceipt; label: (a: 
       <ul className="space-y-1 text-sm">
         {receipt.transfers.map((t) => (
           <li key={t.to} className="flex justify-between">
-            <span>
-              Pagaste a <b>{label(t.to)}</b>
+            <span className="flex flex-col">
+              <span>
+                Pagaste a <b>{label(t.to)}</b>
+              </span>
+              <KeyHint address={t.to} />
             </span>
             <span className="font-display font-bold tabular-nums">
               {formatDecimalString(t.amount)} {TOKEN_SYMBOL}
@@ -268,7 +272,14 @@ function TransferRow({
           <span className="text-ink-400">→</span>
           <Avatar address={t.to} />
           <div className="min-w-0 flex-1 text-sm">
-            <b>{label(t.from)}</b> {mine ? 'pagas' : 'paga'} a <b>{label(t.to)}</b>
+            <div>
+              <b>{label(t.from)}</b> {mine ? 'pagas' : 'paga'} a <b>{label(t.to)}</b>
+            </div>
+            <div className="flex items-center gap-1">
+              <KeyHint address={t.from} />
+              <span className="text-[11px] text-ink-400">→</span>
+              <KeyHint address={t.to} />
+            </div>
           </div>
           <Amount value={t.amount} className="text-base" />
         </div>

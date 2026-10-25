@@ -78,6 +78,15 @@ export function Avatar({ address }: { address: string }) {
   )
 }
 
+/** The Stellar key in small grey mono, shown under a person's name. Full key on hover. */
+export function KeyHint({ address, className = '' }: { address: string; className?: string }) {
+  return (
+    <span className={`font-mono text-[11px] font-normal leading-tight text-ink-400 ${className}`} title={address}>
+      {shortAddress(address)}
+    </span>
+  )
+}
+
 /** Alias (or short address) with inline editing of the alias. */
 export function MemberName({ address, me, editable = false }: { address: string; me?: string | null; editable?: boolean }) {
   const aliases = useAliases()
@@ -129,11 +138,7 @@ export function MemberName({ address, me, editable = false }: { address: string;
           </button>
         )}
       </span>
-      {alias && (
-        <span className="font-mono text-[11px] text-ink-400" title={address}>
-          {shortAddress(address)}
-        </span>
-      )}
+      {alias && <KeyHint address={address} />}
     </span>
   )
 }

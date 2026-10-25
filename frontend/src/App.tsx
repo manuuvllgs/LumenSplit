@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
 import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router-dom'
 import { isMock } from './lib/lumensplit'
-import { shortAddress } from './lib/format'
+import { useAliases } from './lib/aliases'
+import { KeyHint } from './components/ui'
 import { useWallet, WalletProvider } from './wallet'
 import Home from './pages/Home'
 import NewGroup from './pages/NewGroup'
@@ -12,6 +13,7 @@ import Join from './pages/Join'
 
 function Shell({ children }: { children: ReactNode }) {
   const { address, disconnect } = useWallet()
+  const aliases = useAliases()
   return (
     <div className="mx-auto min-h-screen max-w-md px-4 pb-16">
       <header className="flex items-center justify-between py-4">
@@ -27,9 +29,10 @@ function Shell({ children }: { children: ReactNode }) {
             <button
               onClick={disconnect}
               title="Desconectar"
-              className="rounded-full bg-white px-3 py-1 font-mono text-xs text-ink-700 ring-1 ring-ink-200 hover:bg-ink-100"
+              className="flex flex-col items-end rounded-xl bg-white px-3 py-1 text-right ring-1 ring-ink-200 hover:bg-ink-100"
             >
-              {shortAddress(address)}
+              <span className="text-xs font-semibold text-ink-900">{aliases[address] ?? 'Mi cuenta'}</span>
+              <KeyHint address={address} />
             </button>
           )}
         </div>
