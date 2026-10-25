@@ -1,0 +1,161 @@
+/**
+ * Thin, browser-only redirect glue. NOT unit-tested (it drives `window.open`
+ * and `postMessage`); kept deliberately small so the testable logic lives in
+ * `urls.ts` / `handover.ts`.
+ *
+ * The kit's `getAddress` / `signTransaction` / etc. are Promises that must
+ * resolve with a value — a full-page redirect would tear down the calling
+ * page and lose the Promise. So we open the wallet ceremony in a popup and
+ * wait for it to `postMessage` the result back to us, then close it. The
+ * wallet's `/connect/` and `/sign/` pages post `{ source: 'nido-wallet', search }`
+ * (the return query string) back to the opener and self-close.
+ *
+ * If popups are blocked, the caller can fall back to a full-page redirect via
+ * `redirectTopLevel` and read the result on return with the `handover.ts`
+ * parsers — but that requires the dApp to re-invoke after navigation, so the
+ * popup path is the default.
+ */
+
+const MESSAGE_SOURCE = "nido-wallet"
+
+export interface PopupResult {
+	/** The query string the wallet posted back (e.g. "?nido_signed=…"). */
+	search: string
+}
+
+const POPUP_NAME = "nido-wallet"
+const POPUP_FEATURES = "popup,width=460,height=720"
+
+/**
+ * Open the wallet popup now, empty, so the next `openCeremonyPopup` reuses it
+ * by name. Browsers allow a popup only during a user gesture, and a dApp that
+ * simulates a transaction before signing has usually lost the gesture by the
+ * time the kit asks to sign. Call this synchronously in the click handler,
+ * before the first `await`. The returned function closes the popup if the
+ * flow failed before the wallet page loaded; call it in a `finally`.
+ */
+export function reserveCeremonyPopup(): () => void {
+	const popup = window.open("about:blank", POPUP_NAME, POPUP_FEATURES)
+	return () => {
+		try {
+			// Readable only while still same-origin, i.e. never navigated to Nido.
+			if (popup && !popup.closed && popup.location.href === "about:blank")
+				popup.close()
+		} catch {
+			/* cross-origin: the wallet owns it now */
+		}
+	}
+}
+
+/**
+ * Open `url` in a popup and resolve with the return query string once the
+ * wallet posts it back. Rejects if the popup is blocked, the user closes it
+ * without completing, or `timeoutMs` elapses.
+ *
+ * `expectedOrigin` guards against a malicious page posting a forged result:
+ * we only accept messages whose `event.origin` matches.
+ */
+export function openCeremonyPopup(
+	url: string,
+	expectedOrigin: string,
+	timeoutMs = 5 * 60 * 1000,
+): Promise<PopupResult> {
+	return new Promise((resolve, reject) => {
+		const popup = window.open(url, POPUP_NAME, POPUP_FEATURES)
+		if (!popup) {
+			reject(
+				new Error(
+					"Nido: popup was blocked. Allow popups for this site and retry.",
+				),
+			)
+			return
+		}
+
+		let settled = false
+		const cleanup = () => {
+			settled = true
+			window.removeEventListener("message", onMessage)
+			clearInterval(closedTimer)
+			clearTimeout(timer)
+		}
+
+		const onMessage = (event: MessageEvent) => {
+			if (event.origin !== expectedOrigin || event.source !== popup) return
+			const data = event.data as { source?: string; search?: string } | null
+			if (
+				!data ||
+				data.source !== MESSAGE_SOURCE ||
+				typeof data.search !== "string"
+			)
+				return
+			cleanup()
+			try {
+				popup.close()
+			} catch {
+				/* ignore */
+			}
+			resolve({ search: data.search ?? "" })
+		}
+
+		window.addEventListener("message", onMessage)
+
+		// Detect a user closing the popup without finishing.
+		const closedTimer = setInterval(() => {
+			if (settled) return
+			if (popup.closed) {
+				cleanup()
+				reject(
+					new Error("Nido: the wallet window was closed before completing."),
+				)
+			}
+		}, 500)
+
+		const timer = setTimeout(() => {
+			if (settled) return
+			cleanup()
+			try {
+				popup.close()
+			} catch {
+				/* ignore */
+			}
+			reject(new Error("Nido: timed out waiting for the wallet."))
+		}, timeoutMs)
+	})
+}
+
+/** Full-page redirect fallback (loses the Promise; caller must re-read on return). */
+export function redirectTopLevel(url: string): void {
+	window.location.href = url
+}
+
+/**
+ * Called by the wallet's `/connect/` and `/sign/` pages to hand a result back
+ * to the dApp's popup opener. Posts `{ source: 'nido-wallet', search }` to the
+ * opener (targeting `dappOrigin`) and closes the window. If there's no opener
+ * (the page was reached by full-page redirect, not a popup), falls back to a
+ * top-level redirect to `returnUrl` with the result query string appended.
+ *
+ * `search` is the result query string, e.g. `?nido_signed=…&kind=tx`.
+ */
+export function postResultToOpener(
+	search: string,
+	dappOrigin: string,
+	returnUrl?: string,
+): void {
+	const opener = window.opener as Window | null
+	if (opener && !opener.closed) {
+		opener.postMessage({ source: MESSAGE_SOURCE, search }, dappOrigin)
+		window.close()
+		return
+	}
+	// No opener: full-page-redirect fallback. Append the result params to the
+	// return URL (which must be same-origin as dappOrigin — caller validates).
+	if (returnUrl) {
+		const u = new URL(returnUrl)
+		const incoming = new URLSearchParams(search)
+		for (const [k, v] of incoming) u.searchParams.set(k, v)
+		window.location.href = u.toString()
+	}
+}
+
+export { MESSAGE_SOURCE }

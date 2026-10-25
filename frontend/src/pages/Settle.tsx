@@ -11,6 +11,7 @@ import { useTx } from '../useTx'
 import { Amount, Avatar, Button, Card, ErrorBox, Icon, KeyHint, Loading, PageHeader, Spinner, TxStatus, EurHint } from '../components/ui'
 import { locale, t as tx } from '../i18n'
 import { useXlmEur } from '../lib/price'
+import { isSmartAccount } from '../lib/nido'
 
 interface Receipt extends Transfer {
   hash: string
@@ -203,7 +204,8 @@ function TransferRow({
   const { state, run, busy } = useTx()
   const mine = t.from === me
   // Pay-in-euros goes through Horizon on testnet, so it is hidden in mock mode.
-  const euroEnabled = mine && !!PAY_ASSET && !isMock
+  // Path payments are classic operations: a passkey smart account (C…) can't make them.
+  const euroEnabled = mine && !!PAY_ASSET && !isMock && !isSmartAccount(me)
   const xlm = toDecimalString(t.amount)
 
   const [quote, setQuote] = useState<Quote | null>(null)

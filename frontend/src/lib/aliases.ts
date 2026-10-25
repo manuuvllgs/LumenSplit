@@ -8,6 +8,7 @@ import { useEffect, useSyncExternalStore } from 'react'
 import { shortAddress } from './format'
 import { fetchName, saveMyName } from './profile'
 import type { TxOptions } from './lumensplit'
+import { isSmartAccount } from './nido'
 
 const HINTS_KEY = 'lumensplit.aliases'
 const MINE_KEY = 'lumensplit.myNames'
@@ -167,6 +168,8 @@ export function setPendingNames(groupId: number, names: string[]) {
 export async function publishMyNameIfNeeded(address: string, opts?: TxOptions): Promise<string | null> {
   const name = mine[address]
   if (!name) return null
+  // Passkey smart accounts can't store data entries: their name stays on this device.
+  if (isSmartAccount(address)) return null
   if (!(address in chosen)) chosen[address] = await fetchName(address).catch(() => null)
   if (chosen[address] === name) return null
   const { hash } = await saveMyName(address, name, opts)

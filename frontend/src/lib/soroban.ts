@@ -10,6 +10,7 @@ import { getNetworkDetails, isConnected, requestAccess, signTransaction } from '
 import { contractError, LumenSplitError } from './errors'
 import type { Address, Balances, Expense, Group, Transfer, TxOptions, TxResult } from './lumensplit'
 import { t } from '../i18n'
+import { activeSession, describeNido, isSmartAccount, server as nidoServer, submitWithSession } from './nido'
 
 const CONTRACT_ID: string = import.meta.env.VITE_CONTRACT_ID
 const TOKEN_ID: string = import.meta.env.VITE_TOKEN_ID
@@ -78,12 +79,42 @@ async function read<T>(method: string, args?: Record<string, unknown>): Promise<
 }
 
 /** Simulate, fail early on contract errors, then sign with Freighter and send. */
+/**
+ * Passkey (Nido) smart account: the call is simulated without a source (a
+ * `C…` address can't source a transaction) and then signed by this app's
+ * session key under the rules the owner approved on Nido. No prompt.
+ */
+async function writeAsSmartAccount<T>(
+  account: Address,
+  method: string,
+  args: Record<string, unknown>,
+  opts?: TxOptions,
+): Promise<{ hash: string; value: T }> {
+  const session = activeSession(account)
+  if (!session) throw new LumenSplitError(t('Autoriza LumenSplit en Nido para poder hacer esto.'))
+  const c = await reader()
+  const tx = await c[method](args)
+  unwrap(tx.result, simError(tx)) // contract errors read the same way as with Freighter
+  opts?.onPhase?.('submitting')
+  try {
+    const { result, hash } = await submitWithSession(tx, session, nidoServer, PASSPHRASE)
+    return { hash, value: unwrap<T>(result) }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    const code = msg.match(/Error\(Contract, #(\d+)\)/)?.[1]
+    // Our contract's errors are 1–12; the account's own refusals are #3xxx.
+    if (code && Number(code) < 1000) throw contractError(Number(code))
+    throw new LumenSplitError(describeNido(e))
+  }
+}
+
 async function write<T>(
   publicKey: Address,
   method: string,
   args: Record<string, unknown>,
   opts?: TxOptions,
 ): Promise<{ hash: string; value: T }> {
+  if (isSmartAccount(publicKey)) return writeAsSmartAccount<T>(publicKey, method, args, opts)
   const c = await writer(publicKey, opts)
   opts?.onPhase?.('signing')
   const tx = await c[method](args)

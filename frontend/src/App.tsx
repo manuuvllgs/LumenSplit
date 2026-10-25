@@ -17,6 +17,7 @@ import { Footer } from './components/Footer'
 import { LogoMark, Wordmark } from './components/Logo'
 import { setMode, useMode } from './mode'
 import { t, useLang } from './i18n'
+import { NidoSessionBanner } from './components/NidoSession'
 
 function ModeToggle() {
   const mode = useMode()
@@ -66,6 +67,7 @@ function Shell({ children }: { children: ReactNode }) {
         </div>
       </header>
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 pt-6 pb-16 sm:px-6 sm:pt-10 lg:px-8">
+        <NidoSessionBanner />
         <NameGate>{children}</NameGate>
       </main>
       <Footer />
