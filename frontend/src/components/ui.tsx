@@ -6,6 +6,7 @@ import { MAX_NAME_LENGTH, validateName } from '../lib/profile'
 import { explorerTxUrl, formatAmount, shortAddress } from '../lib/format'
 import type { TxState } from '../useTx'
 import { t } from '../i18n'
+import { formatEur, useXlmEur } from '../lib/price'
 
 /**
  * Broadside controls on a Dusk system:
@@ -98,10 +99,39 @@ export function PageHeader({ title, back, right }: { title: string; back?: strin
   )
 }
 
-export function Amount({ value, signed = false, className = '' }: { value: bigint; signed?: boolean; className?: string }) {
+export function Amount({
+  value,
+  signed = false,
+  className = '',
+  eur = true,
+}: {
+  value: bigint
+  signed?: boolean
+  className?: string
+  /** Show "≈ € …" next to it at today's XLM price. */
+  eur?: boolean
+}) {
+  const xlmEur = useXlmEur()
   const color = !signed || value === 0n ? 'text-ink-700' : value > 0n ? 'text-pos-600' : 'text-neg-600'
   const text = signed && value > 0n ? `+${formatAmount(value, true, 2)}` : formatAmount(value, true, 2)
-  return <span className={`figure ${color} ${className}`}>{text}</span>
+  return (
+    <span className={`figure ${color} ${className}`}>
+      {text}
+      {eur && xlmEur !== null && value !== 0n && <EurHint value={value} rate={xlmEur} />}
+    </span>
+  )
+}
+
+/** Small, muted "≈ 3,13 €" that inherits the colour of the amount it follows. */
+export function EurHint({ value, rate, className = '' }: { value: bigint; rate: number; className?: string }) {
+  return (
+    <span
+      className={`ml-1.5 align-baseline text-[0.62em] font-medium whitespace-nowrap opacity-60 ${className}`}
+      title={t('Valor aproximado en euros al precio actual del XLM')}
+    >
+      ≈ {formatEur(value, rate)}
+    </span>
+  )
 }
 
 /** Six avatar tints, all tokens, picked from the address so a person keeps their colour. */

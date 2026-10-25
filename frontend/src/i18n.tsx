@@ -77,6 +77,10 @@ const DICT: Record<string, { en: string; pt: string }> = {
   },
   'Idioma': { en: 'Language', pt: 'Idioma' },
   'Volver': { en: 'Back', pt: 'Voltar' },
+  'Valor aproximado en euros al precio actual del XLM': {
+    en: 'Approximate value in euros at the current XLM price',
+    pt: 'Valor aproximado em euros ao preço atual do XLM',
+  },
   'Modo oscuro': { en: 'Dark mode', pt: 'Modo escuro' },
   'Modo claro': { en: 'Light mode', pt: 'Modo claro' },
   'Cancelar': { en: 'Cancel', pt: 'Cancelar' },
