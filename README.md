@@ -128,7 +128,7 @@ VITE_RPC_URL=https://soroban-testnet.stellar.org
 
 | What | ID |
 |---|---|
-| LumenSplit contract | `CBRITZ5L3VGUCHRXWL5RFLVKGH2I3SGS3K2BUDQXW34BIOZYUN3QJMQF` ([explorer](https://stellar.expert/explorer/testnet/contract/CBRITZ5L3VGUCHRXWL5RFLVKGH2I3SGS3K2BUDQXW34BIOZYUN3QJMQF)) |
+| LumenSplit contract | `CAY3ZW4JCDHB52I556P4DIY5BJ7KF3VMNNXE7ZNFOQ223DYSNC6UWEI2` ([explorer](https://stellar.expert/explorer/testnet/contract/CAY3ZW4JCDHB52I556P4DIY5BJ7KF3VMNNXE7ZNFOQ223DYSNC6UWEI2)) |
 | Settlement token (native XLM SAC) | `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC` ([explorer](https://stellar.expert/explorer/testnet/contract/CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC)) |
 
 ## Roadmap
