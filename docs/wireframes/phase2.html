@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LumenSplit wireframes v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../brand/tokens.css">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: var(--ls-font-sans); background: #E9E9F2; color: var(--ls-text); padding: 32px; }
+  h1 { font-family: var(--ls-font-display); font-size: 22px; margin-bottom: 4px; }
+  .lead { color: var(--ls-text-muted); margin-bottom: 24px; font-size: 14px; }
+  .row { display: flex; gap: 28px; flex-wrap: wrap; align-items: flex-start; }
+  .screen-wrap { width: 360px; }
+  .label { font-family: var(--ls-font-display); font-weight: 700; font-size: 15px; margin-bottom: 8px; }
+  .label span { color: var(--ls-primary); margin-right: 6px; }
+  .phone { width: 360px; height: 720px; background: var(--ls-bg); border-radius: 28px; border: 8px solid var(--ls-ink); overflow: hidden; display: flex; flex-direction: column; position: relative; }
+  .notes { font-size: 12.5px; color: #3F3D56; margin-top: 10px; line-height: 1.5; padding-left: 16px; }
+  .notes li { margin-bottom: 3px; }
+
+  .top { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px 8px; }
+  .top img { height: 26px; }
+  .back { font-size: 14px; color: var(--ls-primary); font-weight: 600; }
+  .title { font-family: var(--ls-font-display); font-weight: 700; font-size: 22px; padding: 4px 18px 12px; }
+  .body { padding: 0 18px; flex: 1; overflow: hidden; }
+  .card { background: var(--ls-surface); border-radius: var(--ls-radius); box-shadow: var(--ls-shadow); padding: 14px 16px; margin-bottom: 12px; }
+  .muted { color: var(--ls-text-muted); font-size: 13px; }
+  .small { font-size: 12px; }
+  .btn { display: block; width: 100%; text-align: center; border-radius: var(--ls-radius-sm); padding: 14px; font-weight: 600; font-size: 15px; border: 0; }
+  .btn-primary { background: var(--ls-primary); color: #fff; }
+  .btn-accent { background: var(--ls-accent); color: var(--ls-ink); }
+  .btn-ghost { background: var(--ls-primary-soft); color: var(--ls-primary); }
+  .footer { padding: 14px 18px 18px; }
+  .pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 99px; }
+  .pill-pos { background: var(--ls-positive-soft); color: var(--ls-positive); }
+  .pill-neg { background: var(--ls-negative-soft); color: var(--ls-negative); }
+  .pill-zero { background: #F0F1F4; color: var(--ls-zero); }
+  .between { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--ls-primary-soft); color: var(--ls-primary); display: grid; place-items: center; font-weight: 700; font-size: 13px; flex: none; }
+  .who { display: flex; align-items: center; gap: 10px; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .input { background: var(--ls-surface); border: 1px solid var(--ls-border); border-radius: var(--ls-radius-sm); padding: 12px; font-size: 15px; color: var(--ls-text-muted); }
+  .input.filled { color: var(--ls-text); }
+  .check { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--ls-border); font-size: 14px; }
+  .box { width: 20px; height: 20px; border-radius: 6px; border: 2px solid var(--ls-primary); background: var(--ls-primary); color: #fff; font-size: 13px; display: grid; place-items: center; }
+  .box.off { background: transparent; }
+  .hero { text-align: center; padding: 18px 0 8px; }
+  .hero .ls-amount--hero { font-size: 44px; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+  .tab { flex: 1; text-align: center; padding: 8px; border-radius: 99px; font-size: 13px; font-weight: 600; background: var(--ls-surface); color: var(--ls-text-muted); }
+  .tab.on { background: var(--ls-ink); color: #fff; }
+  .arrow { color: var(--ls-text-muted); font-size: 18px; }
+  .toast { background: var(--ls-ink); color: #fff; border-radius: var(--ls-radius-sm); padding: 12px 14px; font-size: 13px; }
+  .toast a { color: var(--ls-accent); font-weight: 600; text-decoration: none; }
+  .connect { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 0 26px; text-align: center; }
+</style>
+<style>
+  .modal-bg { position:absolute; inset:0; background:rgba(21,19,46,.45); display:flex; align-items:flex-end; }
+  .sheet { background:var(--ls-surface); width:100%; border-radius:24px 24px 0 0; padding:20px 18px 22px; }
+  .qr { width:180px; height:180px; margin:6px auto 14px; display:block; }
+  .linkbox { display:flex; gap:8px; align-items:center; background:var(--ls-bg); border:1px solid var(--ls-border); border-radius:var(--ls-radius-sm); padding:10px 12px; font-family:monospace; font-size:12px; color:var(--ls-text-muted); }
+  .linkbox span { flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  .mini { padding:8px 12px; font-size:13px; width:auto; display:inline-block; }
+  .amt-in { width:96px; text-align:right; background:var(--ls-surface); border:1px solid var(--ls-border); border-radius:8px; padding:7px 9px; font-family:var(--ls-font-display); font-weight:700; font-variant-numeric:tabular-nums; }
+  .seg { display:flex; background:var(--ls-surface); border:1px solid var(--ls-border); border-radius:99px; padding:3px; margin-bottom:12px; }
+  .seg div { flex:1; text-align:center; padding:7px; border-radius:99px; font-size:13px; font-weight:600; color:var(--ls-text-muted); }
+  .seg .on { background:var(--ls-ink); color:#fff; }
+  .totalbar { display:flex; justify-content:space-between; align-items:center; padding:12px 14px; border-radius:var(--ls-radius-sm); font-size:14px; }
+  .ok { background:var(--ls-positive-soft); color:var(--ls-positive); }
+  .warn { background:var(--ls-negative-soft); color:var(--ls-negative); }
+  .allbtn { background:var(--ls-ink); color:#fff; border-radius:var(--ls-radius); padding:16px; }
+</style>
+</head>
+<body>
+<h1>LumenSplit · wireframes v2 (fase 2)</h1>
+<p class="lead">Lo nuevo: invitar por enlace/QR, unirse, importes distintos y "Saldar todo". Mismos tokens que <code>frontend/src/index.css</code>. Textos en español, como la app.</p>
+<div class="row">
+
+<div class="screen-wrap">
+  <div class="label"><span>A</span>Invitar · modal</div>
+  <div class="phone">
+    <div class="top"><span class="back">‹ Grupos</span><span class="btn-ghost mini" style="border-radius:99px">＋ Invitar</span></div>
+    <div class="title" style="padding-bottom:4px">Lisbon trip 🇵🇹</div>
+    <div class="body"><div class="hero"><div class="muted">Te deben</div><div class="ls-amount ls-amount--hero ls-pos">+30,00</div></div></div>
+    <div class="modal-bg">
+      <div class="sheet">
+        <div class="between"><b style="font-family:var(--ls-font-display);font-size:20px">Invita a tus amigos</b><span class="muted">✕</span></div>
+        <p class="muted" style="margin:4px 0 6px">Que escaneen el QR o abran el enlace. Solo necesitan Freighter.</p>
+        <svg class="qr" viewBox="-1 -1 27 27" role="img" aria-label="Código QR de la invitación"><rect x="-1" y="-1" width="27" height="27" fill="#fff"/><g fill="#15132E"><rect x="0" y="0" width="1" height="1"/><rect x="1" y="0" width="1" height="1"/><rect x="2" y="0" width="1" height="1"/><rect x="3" y="0" width="1" height="1"/><rect x="4" y="0" width="1" height="1"/><rect x="5" y="0" width="1" height="1"/><rect x="6" y="0" width="1" height="1"/><rect x="7" y="0" width="1" height="1"/><rect x="8" y="0" width="1" height="1"/><rect x="10" y="0" width="1" height="1"/><rect x="12" y="0" width="1" height="1"/><rect x="13" y="0" width="1" height="1"/><rect x="15" y="0" width="1" height="1"/><rect x="16" y="0" width="1" height="1"/><rect x="17" y="0" width="1" height="1"/><rect x="18" y="0" width="1" height="1"/><rect x="19" y="0" width="1" height="1"/><rect x="20" y="0" width="1" height="1"/><rect x="21" y="0" width="1" height="1"/><rect x="22" y="0" width="1" height="1"/><rect x="23" y="0" width="1" height="1"/><rect x="24" y="0" width="1" height="1"/><rect x="0" y="1" width="1" height="1"/><rect x="6" y="1" width="1" height="1"/><rect x="7" y="1" width="1" height="1"/><rect x="8" y="1" width="1" height="1"/><rect x="10" y="1" width="1" height="1"/><rect x="11" y="1" width="1" height="1"/><rect x="15" y="1" width="1" height="1"/><rect x="17" y="1" width="1" height="1"/><rect x="18" y="1" width="1" height="1"/><rect x="24" y="1" width="1" height="1"/><rect x="0" y="2" width="1" height="1"/><rect x="2" y="2" width="1" height="1"/><rect x="3" y="2" width="1" height="1"/><rect x="4" y="2" width="1" height="1"/><rect x="6" y="2" width="1" height="1"/><rect x="8" y="2" width="1" height="1"/><rect x="9" y="2" width="1" height="1"/><rect x="10" y="2" width="1" height="1"/><rect x="11" y="2" width="1" height="1"/><rect x="13" y="2" width="1" height="1"/><rect x="16" y="2" width="1" height="1"/><rect x="18" y="2" width="1" height="1"/><rect x="20" y="2" width="1" height="1"/><rect x="21" y="2" width="1" height="1"/><rect x="22" y="2" width="1" height="1"/><rect x="24" y="2" width="1" height="1"/><rect x="0" y="3" width="1" height="1"/><rect x="2" y="3" width="1" height="1"/><rect x="3" y="3" width="1" height="1"/><rect x="4" y="3" width="1" height="1"/><rect x="6" y="3" width="1" height="1"/><rect x="7" y="3" width="1" height="1"/><rect x="8" y="3" width="1" height="1"/><rect x="9" y="3" width="1" height="1"/><rect x="11" y="3" width="1" height="1"/><rect x="12" y="3" width="1" height="1"/><rect x="15" y="3" width="1" height="1"/><rect x="18" y="3" width="1" height="1"/><rect x="20" y="3" width="1" height="1"/><rect x="21" y="3" width="1" height="1"/><rect x="22" y="3" width="1" height="1"/><rect x="24" y="3" width="1" height="1"/><rect x="0" y="4" width="1" height="1"/><rect x="2" y="4" width="1" height="1"/><rect x="3" y="4" width="1" height="1"/><rect x="4" y="4" width="1" height="1"/><rect x="6" y="4" width="1" height="1"/><rect x="7" y="4" width="1" height="1"/><rect x="12" y="4" width="1" height="1"/><rect x="14" y="4" width="1" height="1"/><rect x="15" y="4" width="1" height="1"/><rect x="17" y="4" width="1" height="1"/><rect x="18" y="4" width="1" height="1"/><rect x="20" y="4" width="1" height="1"/><rect x="21" y="4" width="1" height="1"/><rect x="22" y="4" width="1" height="1"/><rect x="24" y="4" width="1" height="1"/><rect x="0" y="5" width="1" height="1"/><rect x="6" y="5" width="1" height="1"/><rect x="8" y="5" width="1" height="1"/><rect x="13" y="5" width="1" height="1"/><rect x="18" y="5" width="1" height="1"/><rect x="24" y="5" width="1" height="1"/><rect x="0" y="6" width="1" height="1"/><rect x="1" y="6" width="1" height="1"/><rect x="2" y="6" width="1" height="1"/><rect x="3" y="6" width="1" height="1"/><rect x="4" y="6" width="1" height="1"/><rect x="5" y="6" width="1" height="1"/><rect x="6" y="6" width="1" height="1"/><rect x="11" y="6" width="1" height="1"/><rect x="16" y="6" width="1" height="1"/><rect x="17" y="6" width="1" height="1"/><rect x="18" y="6" width="1" height="1"/><rect x="19" y="6" width="1" height="1"/><rect x="20" y="6" width="1" height="1"/><rect x="21" y="6" width="1" height="1"/><rect x="22" y="6" width="1" height="1"/><rect x="23" y="6" width="1" height="1"/><rect x="24" y="6" width="1" height="1"/><rect x="1" y="7" width="1" height="1"/><rect x="3" y="7" width="1" height="1"/><rect x="4" y="7" width="1" height="1"/><rect x="5" y="7" width="1" height="1"/><rect x="7" y="7" width="1" height="1"/><rect x="8" y="7" width="1" height="1"/><rect x="9" y="7" width="1" height="1"/><rect x="11" y="7" width="1" height="1"/><rect x="12" y="7" width="1" height="1"/><rect x="17" y="7" width="1" height="1"/><rect x="18" y="7" width="1" height="1"/><rect x="19" y="7" width="1" height="1"/><rect x="22" y="7" width="1" height="1"/><rect x="23" y="7" width="1" height="1"/><rect x="24" y="7" width="1" height="1"/><rect x="0" y="8" width="1" height="1"/><rect x="3" y="8" width="1" height="1"/><rect x="4" y="8" width="1" height="1"/><rect x="5" y="8" width="1" height="1"/><rect x="6" y="8" width="1" height="1"/><rect x="13" y="8" width="1" height="1"/><rect x="18" y="8" width="1" height="1"/><rect x="19" y="8" width="1" height="1"/><rect x="20" y="8" width="1" height="1"/><rect x="22" y="8" width="1" height="1"/><rect x="23" y="8" width="1" height="1"/><rect x="24" y="8" width="1" height="1"/><rect x="0" y="9" width="1" height="1"/><rect x="1" y="9" width="1" height="1"/><rect x="2" y="9" width="1" height="1"/><rect x="3" y="9" width="1" height="1"/><rect x="4" y="9" width="1" height="1"/><rect x="5" y="9" width="1" height="1"/><rect x="6" y="9" width="1" height="1"/><rect x="7" y="9" width="1" height="1"/><rect x="10" y="9" width="1" height="1"/><rect x="11" y="9" width="1" height="1"/><rect x="12" y="9" width="1" height="1"/><rect x="13" y="9" width="1" height="1"/><rect x="14" y="9" width="1" height="1"/><rect x="19" y="9" width="1" height="1"/><rect x="20" y="9" width="1" height="1"/><rect x="21" y="9" width="1" height="1"/><rect x="22" y="9" width="1" height="1"/><rect x="24" y="9" width="1" height="1"/><rect x="0" y="10" width="1" height="1"/><rect x="3" y="10" width="1" height="1"/><rect x="5" y="10" width="1" height="1"/><rect x="10" y="10" width="1" height="1"/><rect x="11" y="10" width="1" height="1"/><rect x="12" y="10" width="1" height="1"/><rect x="16" y="10" width="1" height="1"/><rect x="17" y="10" width="1" height="1"/><rect x="24" y="10" width="1" height="1"/><rect x="1" y="11" width="1" height="1"/><rect x="2" y="11" width="1" height="1"/><rect x="3" y="11" width="1" height="1"/><rect x="4" y="11" width="1" height="1"/><rect x="5" y="11" width="1" height="1"/><rect x="8" y="11" width="1" height="1"/><rect x="12" y="11" width="1" height="1"/><rect x="13" y="11" width="1" height="1"/><rect x="14" y="11" width="1" height="1"/><rect x="15" y="11" width="1" height="1"/><rect x="16" y="11" width="1" height="1"/><rect x="23" y="11" width="1" height="1"/><rect x="4" y="12" width="1" height="1"/><rect x="6" y="12" width="1" height="1"/><rect x="9" y="12" width="1" height="1"/><rect x="10" y="12" width="1" height="1"/><rect x="13" y="12" width="1" height="1"/><rect x="14" y="12" width="1" height="1"/><rect x="15" y="12" width="1" height="1"/><rect x="18" y="12" width="1" height="1"/><rect x="22" y="12" width="1" height="1"/><rect x="24" y="12" width="1" height="1"/><rect x="0" y="13" width="1" height="1"/><rect x="5" y="13" width="1" height="1"/><rect x="8" y="13" width="1" height="1"/><rect x="9" y="13" width="1" height="1"/><rect x="10" y="13" width="1" height="1"/><rect x="11" y="13" width="1" height="1"/><rect x="13" y="13" width="1" height="1"/><rect x="14" y="13" width="1" height="1"/><rect x="15" y="13" width="1" height="1"/><rect x="17" y="13" width="1" height="1"/><rect x="21" y="13" width="1" height="1"/><rect x="1" y="14" width="1" height="1"/><rect x="2" y="14" width="1" height="1"/><rect x="3" y="14" width="1" height="1"/><rect x="4" y="14" width="1" height="1"/><rect x="6" y="14" width="1" height="1"/><rect x="10" y="14" width="1" height="1"/><rect x="14" y="14" width="1" height="1"/><rect x="16" y="14" width="1" height="1"/><rect x="17" y="14" width="1" height="1"/><rect x="23" y="14" width="1" height="1"/><rect x="10" y="15" width="1" height="1"/><rect x="14" y="15" width="1" height="1"/><rect x="15" y="15" width="1" height="1"/><rect x="16" y="15" width="1" height="1"/><rect x="17" y="15" width="1" height="1"/><rect x="18" y="15" width="1" height="1"/><rect x="19" y="15" width="1" height="1"/><rect x="23" y="15" width="1" height="1"/><rect x="1" y="16" width="1" height="1"/><rect x="4" y="16" width="1" height="1"/><rect x="6" y="16" width="1" height="1"/><rect x="10" y="16" width="1" height="1"/><rect x="11" y="16" width="1" height="1"/><rect x="13" y="16" width="1" height="1"/><rect x="14" y="16" width="1" height="1"/><rect x="15" y="16" width="1" height="1"/><rect x="17" y="16" width="1" height="1"/><rect x="19" y="16" width="1" height="1"/><rect x="20" y="16" width="1" height="1"/><rect x="21" y="16" width="1" height="1"/><rect x="24" y="16" width="1" height="1"/><rect x="3" y="17" width="1" height="1"/><rect x="4" y="17" width="1" height="1"/><rect x="5" y="17" width="1" height="1"/><rect x="7" y="17" width="1" height="1"/><rect x="8" y="17" width="1" height="1"/><rect x="9" y="17" width="1" height="1"/><rect x="12" y="17" width="1" height="1"/><rect x="13" y="17" width="1" height="1"/><rect x="17" y="17" width="1" height="1"/><rect x="18" y="17" width="1" height="1"/><rect x="20" y="17" width="1" height="1"/><rect x="21" y="17" width="1" height="1"/><rect x="0" y="18" width="1" height="1"/><rect x="1" y="18" width="1" height="1"/><rect x="2" y="18" width="1" height="1"/><rect x="3" y="18" width="1" height="1"/><rect x="4" y="18" width="1" height="1"/><rect x="5" y="18" width="1" height="1"/><rect x="6" y="18" width="1" height="1"/><rect x="7" y="18" width="1" height="1"/><rect x="9" y="18" width="1" height="1"/><rect x="12" y="18" width="1" height="1"/><rect x="15" y="18" width="1" height="1"/><rect x="16" y="18" width="1" height="1"/><rect x="18" y="18" width="1" height="1"/><rect x="19" y="18" width="1" height="1"/><rect x="20" y="18" width="1" height="1"/><rect x="21" y="18" width="1" height="1"/><rect x="22" y="18" width="1" height="1"/><rect x="23" y="18" width="1" height="1"/><rect x="24" y="18" width="1" height="1"/><rect x="0" y="19" width="1" height="1"/><rect x="6" y="19" width="1" height="1"/><rect x="8" y="19" width="1" height="1"/><rect x="10" y="19" width="1" height="1"/><rect x="11" y="19" width="1" height="1"/><rect x="12" y="19" width="1" height="1"/><rect x="13" y="19" width="1" height="1"/><rect x="14" y="19" width="1" height="1"/><rect x="17" y="19" width="1" height="1"/><rect x="20" y="19" width="1" height="1"/><rect x="22" y="19" width="1" height="1"/><rect x="0" y="20" width="1" height="1"/><rect x="2" y="20" width="1" height="1"/><rect x="3" y="20" width="1" height="1"/><rect x="4" y="20" width="1" height="1"/><rect x="6" y="20" width="1" height="1"/><rect x="7" y="20" width="1" height="1"/><rect x="11" y="20" width="1" height="1"/><rect x="15" y="20" width="1" height="1"/><rect x="16" y="20" width="1" height="1"/><rect x="17" y="20" width="1" height="1"/><rect x="18" y="20" width="1" height="1"/><rect x="19" y="20" width="1" height="1"/><rect x="21" y="20" width="1" height="1"/><rect x="22" y="20" width="1" height="1"/><rect x="23" y="20" width="1" height="1"/><rect x="0" y="21" width="1" height="1"/><rect x="2" y="21" width="1" height="1"/><rect x="3" y="21" width="1" height="1"/><rect x="4" y="21" width="1" height="1"/><rect x="6" y="21" width="1" height="1"/><rect x="9" y="21" width="1" height="1"/><rect x="10" y="21" width="1" height="1"/><rect x="11" y="21" width="1" height="1"/><rect x="13" y="21" width="1" height="1"/><rect x="14" y="21" width="1" height="1"/><rect x="15" y="21" width="1" height="1"/><rect x="19" y="21" width="1" height="1"/><rect x="21" y="21" width="1" height="1"/><rect x="22" y="21" width="1" height="1"/><rect x="23" y="21" width="1" height="1"/><rect x="24" y="21" width="1" height="1"/><rect x="0" y="22" width="1" height="1"/><rect x="2" y="22" width="1" height="1"/><rect x="3" y="22" width="1" height="1"/><rect x="4" y="22" width="1" height="1"/><rect x="6" y="22" width="1" height="1"/><rect x="9" y="22" width="1" height="1"/><rect x="11" y="22" width="1" height="1"/><rect x="12" y="22" width="1" height="1"/><rect x="13" y="22" width="1" height="1"/><rect x="14" y="22" width="1" height="1"/><rect x="15" y="22" width="1" height="1"/><rect x="16" y="22" width="1" height="1"/><rect x="17" y="22" width="1" height="1"/><rect x="18" y="22" width="1" height="1"/><rect x="0" y="23" width="1" height="1"/><rect x="6" y="23" width="1" height="1"/><rect x="7" y="23" width="1" height="1"/><rect x="8" y="23" width="1" height="1"/><rect x="10" y="23" width="1" height="1"/><rect x="13" y="23" width="1" height="1"/><rect x="19" y="23" width="1" height="1"/><rect x="0" y="24" width="1" height="1"/><rect x="1" y="24" width="1" height="1"/><rect x="2" y="24" width="1" height="1"/><rect x="3" y="24" width="1" height="1"/><rect x="4" y="24" width="1" height="1"/><rect x="5" y="24" width="1" height="1"/><rect x="6" y="24" width="1" height="1"/><rect x="11" y="24" width="1" height="1"/><rect x="12" y="24" width="1" height="1"/><rect x="13" y="24" width="1" height="1"/><rect x="14" y="24" width="1" height="1"/><rect x="15" y="24" width="1" height="1"/><rect x="22" y="24" width="1" height="1"/></g><rect x="9.5" y="9.5" width="6" height="6" rx="1.2" fill="#fff"/><image href="../brand/logo-mark.svg" x="9.9" y="9.9" width="5.2" height="5.2"/></svg>
+        <div class="linkbox"><span>lumensplit.app/join/7#k3Jd9xQ2…</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+          <button class="btn btn-primary">Copiar enlace</button>
+          <button class="btn btn-ghost">Compartir</button>
+        </div>
+        <p class="muted small" style="margin-top:10px;text-align:center">Un enlace nuevo anula el anterior.</p>
+      </div>
+    </div>
+  </div>
+  <ul class="notes">
+    <li>Botón "＋ Invitar" en la cabecera del detalle de grupo (solo miembros).</li>
+    <li>createInvite(groupId) → firma en Freighter → muestra {link}. Mientras firma: "Confirma en Freighter…".</li>
+    <li>QR: librería <code>qrcode</code> o <code>react-qr-code</code>, 180px, logo en el centro opcional.</li>
+    <li>"Copiar" cambia a "¡Copiado!" 2 s. "Compartir" usa navigator.share si existe.</li>
+  </ul>
+</div>
+
+<div class="screen-wrap">
+  <div class="label"><span>B</span>/join/:id</div>
+  <div class="phone">
+    <div class="connect">
+      <img src="../brand/logo-mark.svg" alt="" style="width:64px;margin:0 auto 18px">
+      <p class="muted" style="margin-bottom:6px">Te han invitado a</p>
+      <div style="font-family:var(--ls-font-display);font-weight:700;font-size:30px;margin-bottom:14px">Lisbon trip 🇵🇹</div>
+      <div style="display:flex;justify-content:center;gap:-6px;margin-bottom:8px"><div class="avatar">A</div><div class="avatar" style="margin-left:-8px">B</div><div class="avatar" style="margin-left:-8px">C</div></div>
+      <p class="muted small" style="margin-bottom:26px">3 miembros · se paga en XLM</p>
+      <button class="btn btn-primary">Unirme al grupo</button>
+      <p class="muted small" style="margin-top:12px">Entrarás con saldo 0. Freighter te pedirá confirmar.</p>
+    </div>
+  </div>
+  <ul class="notes">
+    <li>Si no hay wallet: el botón dice "Conectar Freighter" y tras conectar pasa a "Unirme".</li>
+    <li>Código = lo que va tras <code>#</code> (location.hash). Nunca se envía a ningún servidor.</li>
+    <li>Errores: 10 → "Ya eres miembro" + botón "Ir al grupo"; 11/12 → "Esta invitación ya no vale. Pide un enlace nuevo".</li>
+    <li>Al terminar: redirige a /g/:id con toast "¡Bienvenido!".</li>
+  </ul>
+</div>
+
+<div class="screen-wrap">
+  <div class="label"><span>C</span>Añadir gasto · importes distintos</div>
+  <div class="phone">
+    <div class="top"><span class="back">‹ Lisbon trip</span><span></span></div>
+    <div class="title">Añadir gasto</div>
+    <div class="body">
+      <div class="field"><label>¿Qué fue?</label><div class="input filled">Cena en Time Out</div></div>
+      <div class="seg"><div>A partes iguales</div><div class="on">Importes distintos</div></div>
+      <div class="card" style="padding:4px 14px">
+        <div class="check between"><div class="who"><div class="avatar">Tú</div>Tú</div><span class="amt-in">18,00</span></div>
+        <div class="check between"><div class="who"><div class="avatar">B</div>Ben</div><span class="amt-in">32,50</span></div>
+        <div class="check between"><div class="who"><div class="avatar">C</div>Carla</div><span class="amt-in">14,50</span></div>
+        <div class="check between" style="border:0"><div class="who"><div class="avatar">D</div>Dani</div><span class="amt-in" style="color:var(--ls-text-muted)">0</span></div>
+      </div>
+      <div class="totalbar ok"><span>Total que pagaste</span><b class="ls-amount" style="font-size:24px">65,00 XLM</b></div>
+    </div>
+    <div class="footer"><button class="btn btn-primary">Guardar gasto</button></div>
+  </div>
+  <ul class="notes">
+    <li>Selector arriba; en "Importes distintos" no hay campo de importe total: el total = suma en vivo.</li>
+    <li>Vacío o 0 = esa persona no participa (no se envía en shares).</li>
+    <li>Barra verde con total si ≥1 importe &gt; 0; si no, gris "Pon al menos un importe" y botón desactivado.</li>
+    <li>Llama a addExpenseCustom(groupId, desc, shares). El pagador sigue siendo "Tú".</li>
+  </ul>
+</div>
+
+<div class="screen-wrap">
+  <div class="label"><span>D</span>Saldar cuentas · Saldar todo</div>
+  <div class="phone">
+    <div class="top"><span class="back">‹ Lisbon trip</span><span></span></div>
+    <div class="title" style="padding-bottom:2px">Saldar cuentas</div>
+    <div class="body">
+      <div class="allbtn" style="margin:6px 0 14px">
+        <div class="small" style="opacity:.75">Debes en total</div>
+        <div class="between" style="margin:2px 0 12px"><b class="ls-amount" style="font-size:30px;color:var(--ls-accent)">59,00 XLM</b><span class="small" style="opacity:.75">a 2 personas</span></div>
+        <button class="btn btn-accent">Saldar todo · 1 firma</button>
+      </div>
+      <div class="card" style="border:2px solid var(--ls-primary)"><div class="between"><div class="who"><div class="avatar">Tú</div><span class="arrow">→</span><div class="avatar">A</div></div><b class="ls-amount">43,00</b></div><div class="muted" style="margin-top:6px">Pagas a Ana</div></div>
+      <div class="card" style="border:2px solid var(--ls-primary)"><div class="between"><div class="who"><div class="avatar">Tú</div><span class="arrow">→</span><div class="avatar">C</div></div><b class="ls-amount">16,00</b></div><div class="muted" style="margin-top:6px">Pagas a Carla</div></div>
+      <div class="toast" style="margin-top:10px">✓ 2 pagos en una sola transacción · 4,8 s<br>Ana 43,00 · Carla 16,00<br><a href="#">Ver en stellar.expert ↗</a></div>
+    </div>
+  </div>
+  <ul class="notes">
+    <li>Tarjeta oscura arriba SOLO si debo dinero en el grupo. Con 1 persona dice "a 1 persona".</li>
+    <li>Botón: "Saldar todo (X XLM a N personas)"; en móvil el importe va arriba en grande, como aquí.</li>
+    <li>Tras pagar: la tarjeta se convierte en el recibo verde con la lista y el enlace.</li>
+  </ul>
+</div>
+
+</div>
+</body>
+</html>

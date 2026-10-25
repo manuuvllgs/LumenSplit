@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { getGroup, isMock, settle, suggestSettlements, type Transfer } from '../lib/lumensplit'
+import { getGroup, isMock, settle, settleAll, suggestSettlements, type Transfer } from '../lib/lumensplit'
 import { getAssetBalance, PAY_ASSET, quotePayIn, swapToXlm, type Quote } from '../lib/pathpay'
 import { humanizeError } from '../lib/errors'
 import { useDisplayName } from '../lib/aliases'
-import { explorerTxUrl, formatDecimalString, toDecimalString, TOKEN_SYMBOL } from '../lib/format'
+import { explorerTxUrl, formatAmount, formatDecimalString, toDecimalString, TOKEN_SYMBOL } from '../lib/format'
 import { useWallet } from '../wallet'
 import { useAsync } from '../useAsync'
 import { useTx } from '../useTx'
@@ -22,6 +22,7 @@ export default function Settle() {
   const name = useDisplayName()
   const { data, error, loading, reload } = useAsync(() => Promise.all([getGroup(id), suggestSettlements(id)]), [id])
   const [receipts, setReceipts] = useState<Receipt[]>([])
+  const [allReceipt, setAllReceipt] = useState<AllReceipt | null>(null)
 
   if (loading && !data) return <Loading />
   if (error || !data) return <ErrorBox message={error ?? 'No se pudo cargar el grupo'} />
@@ -35,6 +36,17 @@ export default function Settle() {
         Los mínimos pagos para que en <b>{group.name}</b> todos queden en paz. Paga los tuyos con un toque: el dinero
         llega al momento por Stellar.
       </p>
+      {allReceipt && <SettleAllReceipt receipt={allReceipt} label={label} />}
+      {me && !allReceipt && (
+        <SettleAllCard
+          groupId={id}
+          mine={transfers.filter((t) => t.from === me)}
+          onPaid={(r) => {
+            setAllReceipt(r)
+            void reload()
+          }}
+        />
+      )}
       {receipts.map((r) => (
         <Card key={r.hash} className="flex items-center gap-3 bg-pos-50! ring-pos-600/20!">
           <span className="text-pos-700">✓</span>
@@ -82,6 +94,81 @@ export default function Settle() {
         </ul>
       )}
     </div>
+  )
+}
+
+interface AllReceipt {
+  hash: string
+  seconds: number
+  transfers: { to: string; amount: string }[]
+}
+
+/** "Saldar todo": every debt I have in the group, one signature, one atomic transaction. */
+function SettleAllCard({
+  groupId,
+  mine,
+  onPaid,
+}: {
+  groupId: number
+  mine: Transfer[]
+  onPaid: (r: AllReceipt) => void
+}) {
+  const { state, run, busy } = useTx()
+  if (mine.length === 0) return null
+  const total = mine.reduce((sum, t) => sum + t.amount, 0n)
+  const people = mine.length === 1 ? '1 persona' : `${mine.length} personas`
+
+  async function payAll() {
+    const started = performance.now()
+    const res = await run((opts) => settleAll(groupId, opts))
+    if (!res) return
+    const seconds = (performance.now() - started) / 1000
+    setTimeout(() => onPaid({ hash: res.hash, seconds, transfers: res.transfers }), 1200)
+  }
+
+  return (
+    <div className="space-y-3 rounded-2xl bg-ink-900 p-4 text-white shadow-sm">
+      <div>
+        <div className="text-xs text-white/70">Debes en total</div>
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="font-display text-3xl font-bold tabular-nums text-accent-400">{formatAmount(total, true, 2)}</span>
+          <span className="text-xs text-white/70">a {people}</span>
+        </div>
+      </div>
+      <Button variant="accent" className="w-full" onClick={payAll} loading={busy} disabled={busy || state.status === 'done'}>
+        Saldar todo ({formatAmount(total, true, 2)} a {people})
+      </Button>
+      {state.status === 'idle' && <p className="text-xs text-white/70">Una sola firma en Freighter: todos los pagos van juntos.</p>}
+      <TxStatus state={state} successText="Todo pagado" />
+    </div>
+  )
+}
+
+function SettleAllReceipt({ receipt, label }: { receipt: AllReceipt; label: (a: string) => string }) {
+  const n = receipt.transfers.length
+  return (
+    <Card className="space-y-2 bg-pos-50! ring-pos-600/20!">
+      <div className="flex items-center gap-2 font-semibold text-pos-700">
+        <span>✓</span>
+        {n === 1 ? '1 pago' : `${n} pagos`} en una sola transacción ·{' '}
+        {receipt.seconds.toLocaleString('es-ES', { maximumFractionDigits: 1 })} s
+      </div>
+      <ul className="space-y-1 text-sm">
+        {receipt.transfers.map((t) => (
+          <li key={t.to} className="flex justify-between">
+            <span>
+              Pagaste a <b>{label(t.to)}</b>
+            </span>
+            <span className="font-display font-bold tabular-nums">
+              {formatDecimalString(t.amount)} {TOKEN_SYMBOL}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <a href={explorerTxUrl(receipt.hash)} target="_blank" rel="noreferrer" className="text-sm font-semibold text-pos-700 underline">
+        Ver en stellar.expert ↗
+      </a>
+    </Card>
   )
 }
 
