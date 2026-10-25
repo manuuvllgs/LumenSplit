@@ -6,7 +6,7 @@
  */
 import { getAddress, isConnected, requestAccess } from '@stellar/freighter-api'
 import { contractError, ContractError, LumenSplitError } from './errors'
-import { setAlias } from './aliases'
+import { seedMockNames } from './profile'
 import type { Address, Balances, Expense, Group, Transfer, TxOptions, TxResult } from './lumensplit'
 
 const STORE_KEY = 'lumensplit.mock.v1'
@@ -114,7 +114,7 @@ function seedDemo(s: Store, me: Address) {
   if (s.seededFor.includes(me)) return
   s.seededFor.push(me)
   const [ana, bruno, carla] = DEMO_FRIENDS.map(([a]) => a)
-  DEMO_FRIENDS.forEach(([a, name]) => setAlias(a, name))
+  seedMockNames(Object.fromEntries(DEMO_FRIENDS))
   const g: StoredGroup = {
     id: s.groups.length + 1,
     name: 'Viaje a Sintra',

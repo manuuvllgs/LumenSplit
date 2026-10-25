@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { getBalances, getExpenses, getGroup, type Expense } from '../lib/lumensplit'
 import { formatAmount, formatDate } from '../lib/format'
-import { useDisplayName } from '../lib/aliases'
+import { useDisplayName, useNames } from '../lib/aliases'
 import { useWallet } from '../wallet'
 import { useAsync } from '../useAsync'
 import { Amount, Avatar, Button, Card, ErrorBox, KeyHint, Loading, MemberName, PageHeader } from '../components/ui'
@@ -24,15 +24,18 @@ export default function GroupDetail() {
   const id = Number(useParams().id)
   const { address: me } = useWallet()
   const name = useDisplayName()
-  const [inviting, setInviting] = useState(false)
+  const [search, setSearch] = useSearchParams()
+  const [inviting, setInviting] = useState(search.get('invitar') === '1')
   const { data, error, loading, reload } = useAsync(
     () => Promise.all([getGroup(id), getBalances(id), getExpenses(id)]),
     [id],
   )
+  const names = useNames(data ? data[0].members : [])
 
   if (loading && !data) return <Loading />
   if (error || !data) return <ErrorBox message={error ?? 'No se pudo cargar el grupo'} />
   const [group, balances, expenses] = data
+  const memberNames = group.members.map((m) => names[m]).filter((n): n is string => !!n)
   const mine = me ? (balances[me] ?? 0n) : 0n
   const total = expenses.reduce((s, e) => s + e.amount, 0n)
   const unsettled = Object.values(balances).some((b) => b !== 0n)
@@ -52,8 +55,10 @@ export default function GroupDetail() {
         <InviteModal
           groupId={id}
           groupName={group.name}
+          takenNames={memberNames}
           onClose={() => {
             setInviting(false)
+            if (search.has('invitar')) setSearch({}, { replace: true })
             void reload()
           }}
         />
