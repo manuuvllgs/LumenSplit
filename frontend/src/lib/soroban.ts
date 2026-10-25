@@ -97,6 +97,7 @@ interface RawExpense {
   amount: bigint
   description: string
   participants: Address[]
+  shares?: bigint[]
   timestamp: bigint
 }
 
@@ -154,7 +155,12 @@ export async function getBalances(groupId: number): Promise<Balances> {
 
 export async function getExpenses(groupId: number): Promise<Expense[]> {
   const list = await read<RawExpense[]>('get_expenses', { group_id: groupId })
-  return list.map((e) => ({ ...e, amount: BigInt(e.amount), timestamp: Number(e.timestamp) }))
+  return list.map((e) => ({
+    ...e,
+    amount: BigInt(e.amount),
+    shares: (e.shares ?? []).map((x) => BigInt(x)),
+    timestamp: Number(e.timestamp),
+  }))
 }
 
 export async function suggestSettlements(groupId: number): Promise<Transfer[]> {
@@ -167,4 +173,80 @@ export async function listMyGroups(address: Address): Promise<Group[]> {
   const ids = Array.from({ length: n }, (_, i) => n - i) // newest first
   const groups = await Promise.all(ids.map((id) => getGroup(id).catch(() => null)))
   return groups.filter((g): g is Group => !!g && g.members.includes(address))
+}
+
+// ── Phase 2: settle all, invitations, custom splits ───────────────────────
+
+/** Pays every debt `from` has in the group in one transaction (one signature). */
+export async function settleAll(
+  groupId: number,
+  from: Address,
+  opts?: TxOptions,
+): Promise<TxResult & { transfers: Transfer[] }> {
+  const { hash, value } = await write<Transfer[]>(from, 'settle_all', { group_id: groupId, from }, opts)
+  const transfers = (value ?? []).map((t) => ({ from: t.from, to: t.to, amount: BigInt(t.amount) }))
+  return { hash, transfers }
+}
+
+const toHex = (b: Uint8Array) => Array.from(b, (x) => x.toString(16).padStart(2, '0')).join('')
+
+function fromHex(hex: string): Uint8Array {
+  const clean = hex.trim().toLowerCase()
+  if (!/^[0-9a-f]+$/.test(clean) || clean.length % 2 !== 0) {
+    throw new LumenSplitError('El enlace de invitación no es válido.')
+  }
+  return Uint8Array.from(clean.match(/../g)!.map((h) => parseInt(h, 16)))
+}
+
+async function sha256(bytes: Uint8Array): Promise<Uint8Array> {
+  return new Uint8Array(await crypto.subtle.digest('SHA-256', bytes as BufferSource))
+}
+
+/** The shareable link. The code goes after `#`, so it never reaches any server. */
+export function inviteLink(groupId: number, code: string): string {
+  return `${window.location.origin}/join/${groupId}#${code}`
+}
+
+/**
+ * Creates (or replaces) the group's invitation. Only the SHA-256 of a random
+ * 16-byte code is stored on-chain; the code itself only lives in the link.
+ */
+export async function createInvite(
+  groupId: number,
+  member: Address,
+  opts?: TxOptions,
+): Promise<TxResult & { code: string; link: string }> {
+  const secret = crypto.getRandomValues(new Uint8Array(16))
+  const code = toHex(secret)
+  const codeHash = await sha256(secret)
+  const { hash } = await write(member, 'create_invite', { group_id: groupId, member, code_hash: codeHash }, opts)
+  return { hash, code, link: inviteLink(groupId, code) }
+}
+
+/** Joins a group with the code from an invitation link (the part after `#`). */
+export async function joinGroup(groupId: number, member: Address, code: string, opts?: TxOptions): Promise<TxResult> {
+  const { hash } = await write(member, 'join_group', { group_id: groupId, member, code: fromHex(code) }, opts)
+  return { hash }
+}
+
+/** Records an expense where each participant owes a different amount. */
+export async function addExpenseCustom(
+  groupId: number,
+  payer: Address,
+  description: string,
+  shares: { address: Address; amount: bigint }[],
+  opts?: TxOptions,
+): Promise<TxResult> {
+  const { hash } = await write(
+    payer,
+    'add_expense_custom',
+    {
+      group_id: groupId,
+      payer,
+      description,
+      shares: shares.map((s) => ({ member: s.address, amount: s.amount })),
+    },
+    opts,
+  )
+  return { hash }
 }

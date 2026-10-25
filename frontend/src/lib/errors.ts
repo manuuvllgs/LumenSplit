@@ -9,6 +9,9 @@ export const ContractError = {
   NothingToSettle: 7,
   AmountTooLarge: 8,
   SelfSettlement: 9,
+  AlreadyMember: 10,
+  InvalidInvite: 11,
+  NoInvite: 12,
 } as const
 
 const MESSAGES: Record<number, string> = {
@@ -21,6 +24,9 @@ const MESSAGES: Record<number, string> = {
   7: 'No hay deuda pendiente entre esas dos personas.',
   8: 'El importe es mayor que lo que se debe.',
   9: 'No puedes pagarte a ti mismo.',
+  10: 'Ya eres miembro de este grupo.',
+  11: 'El enlace de invitación no es válido o ya ha caducado.',
+  12: 'Este grupo todavía no tiene ninguna invitación activa.',
 }
 
 export class LumenSplitError extends Error {
