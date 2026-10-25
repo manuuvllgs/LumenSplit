@@ -5,6 +5,7 @@ import { humanizeError } from '../lib/errors'
 import { MAX_NAME_LENGTH, validateName } from '../lib/profile'
 import { explorerTxUrl, formatAmount, shortAddress } from '../lib/format'
 import type { TxState } from '../useTx'
+import { t } from '../i18n'
 
 type Variant = 'primary' | 'accent' | 'secondary' | 'ghost'
 
@@ -49,7 +50,7 @@ export function PageHeader({ title, back, right }: { title: string; back?: strin
   return (
     <div className="mb-4 flex items-center gap-2">
       {back && (
-        <Link to={back} className="-ml-2 rounded-lg p-2 text-ink-500 hover:bg-ink-100" aria-label="Volver">
+        <Link to={back} className="-ml-2 rounded-lg p-2 text-ink-500 hover:bg-ink-100" aria-label={t('Volver')}>
           ←
         </Link>
       )}
@@ -113,7 +114,7 @@ export function MemberName({ address, me, editable = false }: { address: string;
       await publishMyNameIfNeeded(me)
       setEditing(false)
     } catch (e) {
-      setError(`Guardado solo en este dispositivo. ${humanizeError(e)}`)
+      setError(`${t('Guardado solo en este dispositivo.')} ${humanizeError(e)}`)
     } finally {
       setSaving(false)
     }
@@ -134,12 +135,12 @@ export function MemberName({ address, me, editable = false }: { address: string;
             value={draft}
             maxLength={MAX_NAME_LENGTH}
             onChange={(e) => setDraft(e.target.value)}
-            placeholder="Tu nombre"
+            placeholder={t('Tu nombre')}
             disabled={saving}
             className="w-32 rounded-md border border-ink-200 px-2 py-0.5 text-sm"
           />
           <Button type="submit" variant="ghost" className="px-2! py-0.5!" loading={saving}>
-            {saving ? 'Firma…' : 'Guardar'}
+            {saving ? t('Firma…') : t('Guardar')}
           </Button>
           {!saving && (
             <button type="button" onClick={() => setEditing(false)} className="text-xs text-ink-400">
@@ -155,8 +156,8 @@ export function MemberName({ address, me, editable = false }: { address: string;
   return (
     <span className="flex min-w-0 flex-col leading-tight">
       <span className="flex items-center gap-1 truncate font-medium text-ink-900">
-        {name ?? <span className="text-ink-500">Sin nombre</span>}
-        {isMe && <span className="rounded bg-brand-100 px-1.5 text-[10px] font-semibold text-brand-700">TÚ</span>}
+        {name ?? <span className="text-ink-500">{t('Sin nombre')}</span>}
+        {isMe && <span className="rounded bg-brand-100 px-1.5 text-[10px] font-semibold text-brand-700">{t('TÚ')}</span>}
         {editable && isMe && (
           <button
             type="button"
@@ -166,7 +167,7 @@ export function MemberName({ address, me, editable = false }: { address: string;
               setEditing(true)
             }}
             className="text-xs text-ink-400 hover:text-brand-600"
-            title="Cambiar mi nombre"
+            title={t('Cambiar mi nombre')}
           >
             ✎
           </button>
@@ -178,16 +179,16 @@ export function MemberName({ address, me, editable = false }: { address: string;
 }
 
 const PHASE_TEXT = {
-  signing: 'Confirma en Freighter…',
-  submitting: 'Enviando por Stellar…',
+  signing: () => t('Confirma en Freighter…'),
+  submitting: () => t('Enviando por Stellar…'),
 }
 
-export function TxStatus({ state, successText = 'Hecho' }: { state: TxState; successText?: string }) {
+export function TxStatus({ state, successText }: { state: TxState; successText?: string }) {
   if (state.status === 'idle') return null
   if (state.status === 'signing' || state.status === 'submitting') {
     return (
       <div className="flex items-center gap-2 rounded-xl bg-brand-50 p-3 text-sm text-brand-800">
-        <Spinner /> {PHASE_TEXT[state.status]}
+        <Spinner /> {PHASE_TEXT[state.status]()}
       </div>
     )
   }
@@ -196,9 +197,9 @@ export function TxStatus({ state, successText = 'Hecho' }: { state: TxState; suc
   }
   return (
     <div className="rounded-xl bg-pos-50 p-3 text-sm text-pos-700">
-      ✓ {successText}.{' '}
+      ✓ {successText ?? t('Hecho')}.{' '}
       <a href={explorerTxUrl(state.hash)} target="_blank" rel="noreferrer" className="font-semibold underline">
-        Ver en stellar.expert ↗
+        {t('Ver en stellar.expert ↗')}
       </a>
     </div>
   )

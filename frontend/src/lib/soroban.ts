@@ -9,6 +9,7 @@ import { contract, Networks } from '@stellar/stellar-sdk'
 import { getNetworkDetails, isConnected, requestAccess, signTransaction } from '@stellar/freighter-api'
 import { contractError, LumenSplitError } from './errors'
 import type { Address, Balances, Expense, Group, Transfer, TxOptions, TxResult } from './lumensplit'
+import { t } from '../i18n'
 
 const CONTRACT_ID: string = import.meta.env.VITE_CONTRACT_ID
 const TOKEN_ID: string = import.meta.env.VITE_TOKEN_ID
@@ -40,7 +41,7 @@ async function writer(publicKey: Address, opts?: TxOptions): Promise<LumenSplitC
     signTransaction: async (xdr: string) => {
       opts?.onPhase?.('signing')
       const res = await signTransaction(xdr, { networkPassphrase: PASSPHRASE, address: publicKey })
-      if (res.error) throw new LumenSplitError(res.error.message || 'Has cancelado la firma en Freighter.')
+      if (res.error) throw new LumenSplitError(res.error.message || t('Has cancelado la firma en Freighter.'))
       opts?.onPhase?.('submitting')
       return { signedTxXdr: res.signedTxXdr, signerAddress: res.signerAddress }
     },
@@ -58,7 +59,7 @@ function unwrap<T>(r: unknown, simulationError?: string): T {
     if (res.isErr()) {
       const code = simulationError?.match(/Error\(Contract, #(\d+)\)/)?.[1]
       if (code) throw contractError(Number(code))
-      throw new LumenSplitError(res.error?.message || simulationError || 'Error del contrato')
+      throw new LumenSplitError(res.error?.message || simulationError || t('Error del contrato'))
     }
     return res.unwrap!()
   }
@@ -105,12 +106,12 @@ interface RawExpense {
 
 export async function connectWallet(): Promise<Address> {
   const conn = await isConnected()
-  if (!conn.isConnected) throw new LumenSplitError('No encontramos Freighter. Instala la extensión y recarga la página.')
+  if (!conn.isConnected) throw new LumenSplitError(t('No encontramos Freighter. Instala la extensión y recarga la página.'))
   const res = await requestAccess()
-  if (res.error || !res.address) throw new LumenSplitError(res.error?.message || 'Freighter ha rechazado la conexión.')
+  if (res.error || !res.address) throw new LumenSplitError(res.error?.message || t('Freighter ha rechazado la conexión.'))
   const net = await getNetworkDetails()
   if (!net.error && net.networkPassphrase && net.networkPassphrase !== PASSPHRASE)
-    throw new LumenSplitError('Freighter está en otra red. Cámbiala a Testnet y vuelve a conectar.')
+    throw new LumenSplitError(t('Freighter está en otra red. Cámbiala a Testnet y vuelve a conectar.'))
   return res.address
 }
 
@@ -193,7 +194,7 @@ const toHex = (b: Uint8Array) => Array.from(b, (x) => x.toString(16).padStart(2,
 function fromHex(hex: string): Uint8Array {
   const clean = hex.trim().toLowerCase()
   if (!/^[0-9a-f]+$/.test(clean) || clean.length % 2 !== 0) {
-    throw new LumenSplitError('El enlace de invitación no es válido.')
+    throw new LumenSplitError(t('El enlace de invitación no es válido.'))
   }
   return Uint8Array.from(clean.match(/../g)!.map((h) => parseInt(h, 16)))
 }

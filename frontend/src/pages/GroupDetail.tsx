@@ -7,6 +7,7 @@ import { useWallet } from '../wallet'
 import { useAsync } from '../useAsync'
 import { Amount, Avatar, Button, Card, ErrorBox, KeyHint, Loading, MemberName, PageHeader } from '../components/ui'
 import { InviteModal } from '../components/InviteModal'
+import { t } from '../i18n'
 
 /** Equal splits differ by at most 1 stroop (remainder), so anything wider is a custom split. */
 function isCustomSplit(e: Expense): boolean {
@@ -33,7 +34,7 @@ export default function GroupDetail() {
   const names = useNames(data ? data[0].members : [])
 
   if (loading && !data) return <Loading />
-  if (error || !data) return <ErrorBox message={error ?? 'No se pudo cargar el grupo'} />
+  if (error || !data) return <ErrorBox message={error ?? t('No se pudo cargar el grupo')} />
   const [group, balances, expenses] = data
   const memberNames = group.members.map((m) => names[m]).filter((n): n is string => !!n)
   const mine = me ? (balances[me] ?? 0n) : 0n
@@ -47,7 +48,7 @@ export default function GroupDetail() {
         back="/"
         right={
           <Button variant="ghost" onClick={() => setInviting(true)}>
-            + Invitar
+            {t('+ Invitar')}
           </Button>
         }
       />
@@ -65,38 +66,38 @@ export default function GroupDetail() {
       )}
 
       <Card className="bg-ink-900! text-white ring-0!">
-        <div className="text-sm opacity-80">Tu saldo</div>
+        <div className="text-sm opacity-80">{t('Tu saldo')}</div>
         <div className="mt-1 font-display text-4xl font-bold tabular-nums">
-          {mine === 0n ? 'Estás en paz' : <Amount value={mine} signed className={mine > 0n ? 'text-[#4ade80]!' : 'text-[#ff8a80]!'} />}
+          {mine === 0n ? t('Estás en paz') : <Amount value={mine} signed className={mine > 0n ? 'text-[#4ade80]!' : 'text-[#ff8a80]!'} />}
         </div>
         <div className="mt-1 text-sm opacity-80">
-          {mine > 0n ? 'Te deben dinero' : mine < 0n ? 'Debes dinero' : 'No debes nada'} · Gasto total{' '}
+          {mine > 0n ? t('Te deben dinero') : mine < 0n ? t('Debes dinero') : t('No debes nada')} · {t('Gasto total')}{' '}
           <Amount value={total} className="text-white! font-normal!" />
         </div>
       </Card>
 
       <div className="grid grid-cols-2 gap-3">
         <Link to={`/g/${id}/expense`}>
-          <Button className="w-full">+ Añadir gasto</Button>
+          <Button className="w-full">{t('+ Añadir gasto')}</Button>
         </Link>
         {unsettled ? (
           <Link to={`/g/${id}/settle`}>
             <Button variant="accent" className="w-full">
-              Saldar cuentas
+              {t('Saldar cuentas')}
             </Button>
           </Link>
         ) : (
           <Button variant="secondary" className="w-full" disabled>
-            Todo saldado
+            {t('Todo saldado')}
           </Button>
         )}
       </div>
 
       <section>
         <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-500">Saldos</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-500">{t('Saldos')}</h2>
           <button onClick={() => setInviting(true)} className="text-sm font-semibold text-brand-700 hover:underline">
-            Invitar amigos
+            {t('Invitar amigos')}
           </button>
         </div>
         <Card className="divide-y divide-ink-100 p-0">
@@ -114,16 +115,16 @@ export default function GroupDetail() {
               onClick={() => setInviting(true)}
               className="w-full px-4 py-4 text-sm font-semibold text-brand-700 hover:bg-brand-50"
             >
-              Estás solo en el grupo. Invita a tus amigos con un enlace o QR →
+              {t('Estás solo en el grupo. Invita a tus amigos con un enlace o QR →')}
             </button>
           )}
         </Card>
       </section>
 
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-ink-500">Gastos</h2>
+        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-ink-500">{t('Gastos')}</h2>
         {expenses.length === 0 ? (
-          <Card className="py-8 text-center text-ink-500">Todavía no hay gastos.</Card>
+          <Card className="py-8 text-center text-ink-500">{t('Todavía no hay gastos.')}</Card>
         ) : (
           <Card className="divide-y divide-ink-100 p-0">
             {[...expenses].reverse().map((e, i) => (
@@ -132,8 +133,8 @@ export default function GroupDetail() {
                 <div className="min-w-0 flex-1">
                   <div className="truncate font-medium">{e.description}</div>
                   <div className="text-xs text-ink-500">
-                    Pagó <b className="text-ink-900">{e.payer === me ? 'tú' : name(e.payer)}</b> · {e.participants.length}{' '}
-                    personas · {formatDate(e.timestamp)}
+                    {t('Pagó')} <b className="text-ink-900">{e.payer === me ? t('tú') : name(e.payer)}</b> · {e.participants.length}{' '}
+                    {t('personas')} · {formatDate(e.timestamp)}
                   </div>
                   <KeyHint address={e.payer} />
                   {isCustomSplit(e) && (
@@ -141,7 +142,7 @@ export default function GroupDetail() {
                       {e.participants.map((p, j) => (
                         <span key={p} title={p} className="flex flex-col rounded-lg bg-ink-100 px-2 py-0.5 text-[11px] text-ink-700">
                           <span>
-                            <b className="text-ink-900">{p === me ? 'Tú' : name(p)}</b> {formatAmount(e.shares![j], false, 2)}
+                            <b className="text-ink-900">{p === me ? t('Tú') : name(p)}</b> {formatAmount(e.shares![j], false, 2)}
                           </span>
                           <KeyHint address={p} className="text-[10px]" />
                         </span>

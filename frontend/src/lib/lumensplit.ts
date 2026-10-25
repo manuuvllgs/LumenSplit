@@ -15,6 +15,7 @@ import * as mockImpl from './mock'
 import { contractError, ContractError, LumenSplitError } from './errors'
 import { explorerTxUrl, parseAmount, toDecimalString } from './format'
 import * as sorobanImpl from './soroban'
+import { t } from '../i18n'
 
 export const isMock: boolean = !import.meta.env.VITE_CONTRACT_ID || import.meta.env.VITE_USE_MOCK === 'true'
 const mock = isMock ? mockImpl : sorobanImpl
@@ -82,7 +83,7 @@ export function setActiveAddress(address: Address | null) {
 }
 
 function requireAddress(): Address {
-  if (!activeAddress) throw new LumenSplitError('Conecta tu wallet primero.')
+  if (!activeAddress) throw new LumenSplitError(t('Conecta tu wallet primero.'))
   return activeAddress
 }
 

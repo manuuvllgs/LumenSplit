@@ -1,4 +1,5 @@
 import { StrKey } from '@stellar/stellar-sdk'
+import { locale } from '../i18n'
 
 export const DECIMALS = 7
 const UNIT = 10n ** BigInt(DECIMALS)
@@ -44,7 +45,7 @@ export function explorerAccountUrl(address: string): string {
 }
 
 export function formatDate(unixSeconds: number): string {
-  return new Date(unixSeconds * 1000).toLocaleDateString('es-ES', {
+  return new Date(unixSeconds * 1000).toLocaleDateString(locale(), {
     day: 'numeric',
     month: 'short',
     hour: '2-digit',
@@ -62,5 +63,5 @@ export function toDecimalString(value: bigint): string {
 
 /** "10.8611" → "10,86" */
 export function formatDecimalString(value: string, maxDecimals = 2): string {
-  return Number(value).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: maxDecimals })
+  return Number(value).toLocaleString(locale(), { minimumFractionDigits: 2, maximumFractionDigits: maxDecimals })
 }

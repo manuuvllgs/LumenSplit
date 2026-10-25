@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 /** Error codes from the contract's `#[contracterror] enum Error`. */
 export const ContractError = {
   GroupNotFound: 1,
@@ -39,7 +40,7 @@ export class LumenSplitError extends Error {
 }
 
 export function contractError(code: number): LumenSplitError {
-  return new LumenSplitError(MESSAGES[code] ?? `Error del contrato #${code}`, code)
+  return new LumenSplitError(MESSAGES[code] ? t(MESSAGES[code]) : t('Error del contrato #{code}', { code }), code)
 }
 
 /**
@@ -50,14 +51,14 @@ export function humanizeError(e: unknown): string {
   if (e instanceof LumenSplitError) return e.message
   const raw = e instanceof Error ? e.message : typeof e === 'string' ? e : JSON.stringify(e)
   const m = raw.match(/Error\(Contract, #(\d+)\)/)
-  if (m) return MESSAGES[Number(m[1])] ?? raw
-  if (/user declined|rejected|denied/i.test(raw)) return 'Has cancelado la firma en Freighter.'
+  if (m) return MESSAGES[Number(m[1])] ? t(MESSAGES[Number(m[1])]) : raw
+  if (/user declined|rejected|denied/i.test(raw)) return t('Has cancelado la firma en Freighter.')
   if (/not installed|freighter.*not.*(found|available)/i.test(raw))
-    return 'No encontramos Freighter. Instala la extensión y recarga la página.'
+    return t('No encontramos Freighter. Instala la extensión y recarga la página.')
   if (/account not found|accountnotfound|Account .* not found/i.test(raw))
-    return 'Tu cuenta aún no existe en testnet. Fóndeala gratis con Friendbot y vuelve a intentarlo.'
+    return t('Tu cuenta aún no existe en testnet. Fóndeala gratis con Friendbot y vuelve a intentarlo.')
   if (/underfunded|insufficient|balance/i.test(raw))
-    return 'No tienes saldo suficiente en la cuenta para este pago.'
-  if (/network|fetch|timeout/i.test(raw)) return 'Problema de conexión con la red Stellar. Inténtalo de nuevo.'
-  return raw || 'Algo ha fallado. Inténtalo de nuevo.'
+    return t('No tienes saldo suficiente en la cuenta para este pago.')
+  if (/network|fetch|timeout/i.test(raw)) return t('Problema de conexión con la red Stellar. Inténtalo de nuevo.')
+  return raw || t('Algo ha fallado. Inténtalo de nuevo.')
 }

@@ -9,6 +9,7 @@ import { useWallet } from '../wallet'
 import { useAsync } from '../useAsync'
 import { useTx } from '../useTx'
 import { Amount, Avatar, Button, Card, ErrorBox, KeyHint, Loading, PageHeader, Spinner, TxStatus } from '../components/ui'
+import { locale, t as tx } from '../i18n'
 
 interface Receipt extends Transfer {
   hash: string
@@ -25,16 +26,15 @@ export default function Settle() {
   const [allReceipt, setAllReceipt] = useState<AllReceipt | null>(null)
 
   if (loading && !data) return <Loading />
-  if (error || !data) return <ErrorBox message={error ?? 'No se pudo cargar el grupo'} />
+  if (error || !data) return <ErrorBox message={error ?? tx('No se pudo cargar el grupo')} />
   const [group, transfers] = data
-  const label = (a: string) => (a === me ? 'Tú' : name(a))
+  const label = (a: string) => (a === me ? tx('Tú') : name(a))
 
   return (
     <div className="space-y-4">
-      <PageHeader title="Saldar cuentas" back={`/g/${id}`} />
+      <PageHeader title={tx('Saldar cuentas')} back={`/g/${id}`} />
       <p className="text-sm text-ink-500">
-        Los mínimos pagos para que en <b>{group.name}</b> todos queden en paz. Paga los tuyos con un toque: el dinero
-        llega al momento por Stellar.
+        {tx('Los mínimos pagos para que en {group} todos queden en paz. Paga los tuyos con un toque: el dinero llega al momento por Stellar.', { group: group.name })}
       </p>
       {allReceipt && <SettleAllReceipt receipt={allReceipt} label={label} />}
       {me && !allReceipt && (
@@ -51,16 +51,16 @@ export default function Settle() {
         <Card key={r.hash} className="flex items-center gap-3 bg-pos-50! ring-pos-600/20!">
           <span className="text-pos-700">✓</span>
           <div className="min-w-0 flex-1 text-sm">
-            Pagaste <Amount value={r.amount} /> a <b>{label(r.to)}</b>
+            {tx('Pagaste')} <Amount value={r.amount} /> {tx('a')} <b>{label(r.to)}</b>
             <KeyHint address={r.to} className="block" />
             <div className="text-xs text-ink-500">
-              {r.swapHash ? 'en euros · ' : ''}confirmado en{' '}
-              {r.seconds.toLocaleString('es-ES', { maximumFractionDigits: 1 })} s
+              {r.swapHash ? tx('en euros · ') : ''}{tx('confirmado en')}{' '}
+              {r.seconds.toLocaleString(locale(), { maximumFractionDigits: 1 })} s
               {r.swapHash && (
                 <>
                   {' · '}
                   <a href={explorerTxUrl(r.swapHash)} target="_blank" rel="noreferrer" className="underline">
-                    conversión ↗
+                    {tx('conversión ↗')}
                   </a>
                 </>
               )}
@@ -74,8 +74,8 @@ export default function Settle() {
       {transfers.length === 0 ? (
         <Card className="py-10 text-center">
           <div className="text-3xl">🎉</div>
-          <div className="mt-2 font-semibold">¡Todo saldado!</div>
-          <div className="text-sm text-ink-500">Nadie debe nada en este grupo.</div>
+          <div className="mt-2 font-semibold">{tx('¡Todo saldado!')}</div>
+          <div className="text-sm text-ink-500">{tx('Nadie debe nada en este grupo.')}</div>
         </Card>
       ) : (
         <ul className="space-y-3">
@@ -117,7 +117,7 @@ function SettleAllCard({
   const { state, run, busy } = useTx()
   if (mine.length === 0) return null
   const total = mine.reduce((sum, t) => sum + t.amount, 0n)
-  const people = mine.length === 1 ? '1 persona' : `${mine.length} personas`
+  const people = mine.length === 1 ? tx('1 persona') : tx('{n} personas', { n: mine.length })
 
   async function payAll() {
     const started = performance.now()
@@ -130,17 +130,17 @@ function SettleAllCard({
   return (
     <div className="space-y-3 rounded-2xl bg-ink-900 p-4 text-white shadow-sm">
       <div>
-        <div className="text-xs text-white/70">Debes en total</div>
+        <div className="text-xs text-white/70">{tx('Debes en total')}</div>
         <div className="flex items-baseline justify-between gap-2">
           <span className="font-display text-3xl font-bold tabular-nums text-accent-400">{formatAmount(total, true, 2)}</span>
-          <span className="text-xs text-white/70">a {people}</span>
+          <span className="text-xs text-white/70">{tx('a {people}', { people })}</span>
         </div>
       </div>
       <Button variant="accent" className="w-full" onClick={payAll} loading={busy} disabled={busy || state.status === 'done'}>
-        Saldar todo ({formatAmount(total, true, 2)} a {people})
+        {tx('Saldar todo ({amount} a {people})', { amount: formatAmount(total, true, 2), people })}
       </Button>
-      {state.status === 'idle' && <p className="text-xs text-white/70">Una sola firma en Freighter: todos los pagos van juntos.</p>}
-      <TxStatus state={state} successText="Todo pagado" />
+      {state.status === 'idle' && <p className="text-xs text-white/70">{tx('Una sola firma en Freighter: todos los pagos van juntos.')}</p>}
+      <TxStatus state={state} successText={tx('Todo pagado')} />
     </div>
   )
 }
@@ -151,15 +151,15 @@ function SettleAllReceipt({ receipt, label }: { receipt: AllReceipt; label: (a: 
     <Card className="space-y-2 bg-pos-50! ring-pos-600/20!">
       <div className="flex items-center gap-2 font-semibold text-pos-700">
         <span>✓</span>
-        {n === 1 ? '1 pago' : `${n} pagos`} en una sola transacción ·{' '}
-        {receipt.seconds.toLocaleString('es-ES', { maximumFractionDigits: 1 })} s
+        {n === 1 ? tx('1 pago') : tx('{n} pagos', { n })} {tx('en una sola transacción ·')}{' '}
+        {receipt.seconds.toLocaleString(locale(), { maximumFractionDigits: 1 })} s
       </div>
       <ul className="space-y-1 text-sm">
         {receipt.transfers.map((t) => (
           <li key={t.to} className="flex justify-between">
             <span className="flex flex-col">
               <span>
-                Pagaste a <b>{label(t.to)}</b>
+                {tx('Pagaste a')} <b>{label(t.to)}</b>
               </span>
               <KeyHint address={t.to} />
             </span>
@@ -170,7 +170,7 @@ function SettleAllReceipt({ receipt, label }: { receipt: AllReceipt; label: (a: 
         ))}
       </ul>
       <a href={explorerTxUrl(receipt.hash)} target="_blank" rel="noreferrer" className="text-sm font-semibold text-pos-700 underline">
-        Ver en stellar.expert ↗
+        {tx('Ver en stellar.expert ↗')}
       </a>
     </Card>
   )
@@ -256,7 +256,7 @@ function TransferRow({
       setEuro({
         step: 'error',
         swapHash,
-        message: `${humanizeError(e)} Los euros ya están convertidos a ${TOKEN_SYMBOL} en tu cuenta: pulsa "Pagar" para terminar.`,
+        message: `${humanizeError(e)} ${tx('Los euros ya están convertidos a {sym} en tu cuenta: pulsa "Pagar" para terminar.', { sym: TOKEN_SYMBOL })}`,
       })
     }
   }
@@ -273,7 +273,7 @@ function TransferRow({
           <Avatar address={t.to} />
           <div className="min-w-0 flex-1 text-sm">
             <div>
-              <b>{label(t.from)}</b> {mine ? 'pagas' : 'paga'} a <b>{label(t.to)}</b>
+              <b>{label(t.from)}</b> {mine ? tx('pagas a') : tx('paga a')} <b>{label(t.to)}</b>
             </div>
             <div className="flex items-center gap-1">
               <KeyHint address={t.from} />
@@ -286,11 +286,11 @@ function TransferRow({
         {mine && !finished && (
           <div className={`grid gap-2 ${euroEnabled ? 'grid-cols-2' : ''}`}>
             <Button variant="accent" onClick={pay} loading={busy} disabled={anyBusy}>
-              Pagar
+              {tx('Pagar')}
             </Button>
             {euroEnabled && (
               <Button variant="secondary" onClick={payInEuros} loading={euroBusy} disabled={anyBusy || !quote}>
-                Pagar en euros
+                {tx('Pagar en euros')}
               </Button>
             )}
           </div>
@@ -304,16 +304,16 @@ function TransferRow({
                   {formatDecimalString(quote.sourceAmount)} {PAY_ASSET.code}
                 </b>{' '}
                 · {quote.route}
-                {eurBalance !== null && ` · tienes ${formatDecimalString(eurBalance)} ${PAY_ASSET.code}`}
+                {eurBalance !== null && ` · ${tx('tienes {amount}', { amount: `${formatDecimalString(eurBalance)} ${PAY_ASSET.code}` })}`}
               </>
             ) : quoteError ? (
               <span className="text-neg-600">{quoteError}</span>
             ) : (
-              'Calculando precio en euros…'
+              tx('Calculando precio en euros…')
             )}
           </div>
         )}
-        <TxStatus state={state} successText="Pago enviado" />
+        <TxStatus state={state} successText={tx('Pago enviado')} />
         <EuroStatus euro={euro} to={label(t.to)} />
       </Card>
     </li>
@@ -325,18 +325,18 @@ function EuroStatus({ euro, to }: { euro: EuroState; to: string }) {
   const swapHash = 'swapHash' in euro ? euro.swapHash : undefined
   const swapLink = swapHash && (
     <a href={explorerTxUrl(swapHash)} target="_blank" rel="noreferrer" className="font-semibold underline">
-      Conversión ↗
+      {tx('Conversión ↗')}
     </a>
   )
   if (euro.step === 'swap' || euro.step === 'settle') {
     return (
       <div className="space-y-1 rounded-xl bg-brand-50 p-3 text-sm text-brand-800">
         <div className="flex items-center gap-2">
-          {euro.step === 'swap' ? <Spinner /> : <span>✓</span>} 1/2 Convirtiendo euros… {swapLink}
+          {euro.step === 'swap' ? <Spinner /> : <span>✓</span>} {tx('1/2 Convirtiendo euros…')} {swapLink}
         </div>
         {euro.step === 'settle' && (
           <div className="flex items-center gap-2">
-            <Spinner /> 2/2 Pagando a {to}…
+            <Spinner /> {tx('2/2 Pagando a {to}…', { to })}
           </div>
         )}
       </div>
@@ -351,9 +351,9 @@ function EuroStatus({ euro, to }: { euro: EuroState; to: string }) {
   }
   return (
     <div className="rounded-xl bg-pos-50 p-3 text-sm text-pos-700">
-      ✓ Pagado en euros. {swapLink} ·{' '}
+      ✓ {tx('Pagado en euros.')} {swapLink} ·{' '}
       <a href={explorerTxUrl(euro.settleHash)} target="_blank" rel="noreferrer" className="font-semibold underline">
-        Pago a {to} ↗
+        {tx('Pago a {to} ↗', { to })}
       </a>
     </div>
   )
