@@ -3,34 +3,37 @@
 ![logo](logo.svg)
 
 ## Logo
-- `logo.svg`: horizontal logo for light backgrounds.
+The mark is a **coin split in two by a ray of light**, in ink on a **HackMeridian-gold tile**. It uses fixed colours, so it reads the same on light and dark backgrounds.
+
+- `logo.svg`: horizontal logo (mark + wordmark) for light backgrounds.
 - `logo-dark.svg`: horizontal logo for dark backgrounds.
-- `logo-mark.svg` / `favicon.svg`: the symbol alone (a coin split in two, with a ray of light between the halves).
+- `logo-mark.svg` / `favicon.svg`: the mark alone, as a rounded gold tile.
+- App icons (PWA): [`../../frontend/public/`](../../frontend/public/) → `icon-192.png`, `icon-512.png`, `icon-maskable-512.png` (logo inside the safe zone for Android masks) and `apple-touch-icon.png`.
 
-## Colours
-| Token | Hex | Use |
+In the app, the mark is the `LogoMark` component in [`frontend/src/components/Logo.tsx`](../../frontend/src/components/Logo.tsx).
+
+## Colours (Dusk × HackMeridian)
+| Token | Value | Use |
 |---|---|---|
-| `primary` | `#5B4BFF` | Main buttons, links, focus |
-| `accent` | `#FFC23D` | The "lumen": **Settle up** and **Pay** buttons, highlights |
-| `ink` | `#15132E` | Text, dark cards |
-| `positive` | `#067647` | You are owed (green) |
-| `negative` | `#D92D20` | You owe (red) |
-| `zero` | `#667085` | Settled |
-| `bg` / `surface` / `line` | `#F7F7FB` / `#FFFFFF` / `#E4E4EE` | Background, cards, borders |
+| Gold | `#fdda24` | HackMeridian's gold. The logo tile and the one action that moves money (Pay, Settle all) |
+| Ink | `#0f0f0f` | Text and the coin in the logo |
+| Bone | `#f6f4ef` | Light background |
+| Slate | `#14161f` | Balance card, footer, dark mode background |
+| Periwinkle | `oklch(46% 0.14 274)` | Selection, links, info |
+| Positive / Negative | `oklch(50% 0.12 155)` / `oklch(53% 0.18 27)` | You are owed / You owe |
 
-Each colour has a `-soft` variant for pill and chip backgrounds.
+The full token set (light and dark) lives in [`frontend/src/index.css`](../../frontend/src/index.css).
 
 ## Typography
-- **Space Grotesk** 700: headings and every amount (with `tabular-nums`).
-- **Inter** 400–700: everything else.
-
-## For the frontend
-- Plain CSS: [`tokens.css`](tokens.css) (`--ls-*` variables + `.ls-amount`, `.ls-pos`, `.ls-neg` classes).
-- Tailwind: [`tailwind.preset.js`](tailwind.preset.js) → `bg-primary`, `text-positive`, `bg-negative-soft`, `font-display`, `rounded-card`, `shadow-card`…
-- Wireframes of the 5 screens: [`../wireframes/`](../wireframes/) (`wireframes.png`, or open `index.html`).
+- **Wix Madefor Display**: headings and amounts.
+- **Wix Madefor Text**: body text.
+- **Archivo Narrow** 600: buttons and controls.
+- **IBM Plex Mono**: Stellar keys and hashes.
 
 ## Copy rules (no crypto jargon)
 - "Settle up", "Pay", "You owe", "You are owed". Never "transaction", "invoke", "sign", "i128".
-- Amounts big, 2 decimals, currency underneath: `45.00` / `XLM`.
-- Addresses shortened (`GA7Q…K3PD`) and replaced by a nickname whenever we have one.
-- After a payment, show how long it took and the fee, plus a link to Stellar Expert.
+- Amounts big, 2 decimals, currency next to them, with the approximate value in euros.
+- Addresses shortened (`GA7Q…K3PD`) and replaced by the person's chosen name whenever we have one.
+- After a payment, show how long it took, plus a link to Stellar Expert.
+
+> The PNGs in [`../wireframes/`](../wireframes/) are the early design sketches and still show the first version of the logo.
