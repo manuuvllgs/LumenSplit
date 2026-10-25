@@ -27,10 +27,10 @@ Across borders it gets worse. An international student in Lisbon paying back a f
 
 LumenSplit puts **tracking and paying in the same place**.
 
-1. Create a group and add your friends.
-2. Log expenses. They are split equally and everyone sees their balance (green = you're owed, red = you owe).
+1. Create a group and **invite friends with a link or QR code**. They open it, connect Freighter and they're in. No copying `G…` addresses.
+2. Log expenses. Split them equally, or **with different amounts** ("I had the expensive dish"). Everyone sees their balance (green = you're owed, red = you owe).
 3. Tap **Settle up**. The contract computes the **fewest payments** needed to bring everyone back to zero.
-4. Tap **Pay**. Real tokens (XLM or USDC) move on Stellar in about 5 seconds for a fraction of a cent, and the shared ledger updates at once.
+4. Tap **Pay**, or **Settle all** to pay every debt you have in the group **with one signature, in one atomic transaction**. Real tokens (XLM or USDC) move on Stellar in about 5 seconds for a fraction of a cent, and the shared ledger updates at once.
 5. Only hold euros? Tap **Pay in euros**. Stellar's built-in exchange converts them on the fly, and your friend receives exactly what they are owed.
 
 The group's ledger lives in a Soroban smart contract: nobody can rewrite history, and every payment has a public receipt on the explorer.
@@ -45,6 +45,9 @@ The group's ledger lives in a Soroban smart contract: nobody can rewrite history
 ### What makes it different
 - **On-chain debt simplification**: `suggest_settlements` turns a tangle of debts into the minimum list of transfers, computed by the contract so everyone sees the same answer.
 - **Safe one-tap settlement**: `settle` only lets you pay what you actually owe to someone who is actually owed. No overpaying.
+- **Settle all, atomically**: `settle_all` pays every one of your debts in a single Soroban transaction. One signature, all-or-nothing: you never end up half-paid.
+- **Join by link, secret never on-chain**: the group stores only the SHA-256 hash of the invite code (`create_invite`); the code itself travels after the `#` in the link, so it never reaches a server, and `join_group` checks it on-chain.
+- **Unequal splits**: `add_expense_custom` records exactly what each person owes, and the ledger still always sums to zero.
 - **Pay in any currency**: a debtor can pay in EURT (our demo euro) while the group settles in XLM. A path payment routes the euros through Stellar's native AMM, so the person who is owed gets the exact amount. No bridge, no third-party exchange.
 - **No crypto jargon**: the UI talks about amounts, names and "Pay". The wallet is the only hint that it runs on a blockchain.
 
@@ -186,9 +189,9 @@ VITE_PAY_ASSET=EURT:<issuer>   # printed by setup-eurt.mjs; hides "Pay in euros"
 EURT is a demo token we issued on testnet to make cross-currency payments reproducible. In production the same code works with EURC or USDC, since the path is found by the network at payment time.
 
 ## Roadmap
-1. **Now (hackathon):** groups, expenses, balances, minimal settlements, real payments on testnet, and paying in euros through path payments.
-2. **Next:** real stablecoins (EURC, USDC) as group and payment assets; pay several debts in one tap.
-3. **Then:** cash out to a bank account through Stellar anchors (SEP-24), invite friends with a link, recurring expenses.
+1. **Now (hackathon):** groups, equal and unequal expenses, invite links and QR, balances, minimal settlements, real payments on testnet, settle-all in one transaction, and paying in euros through path payments.
+2. **Next:** real stablecoins (EURC, USDC) as group and payment assets; "Settle all in euros" in one tap.
+3. **Then:** cash out to a bank account through Stellar anchors (SEP-24), recurring expenses, splits by percentage.
 4. **Later:** mainnet, mobile app, passkey wallets so friends don't need to install anything.
 
 ## Team
