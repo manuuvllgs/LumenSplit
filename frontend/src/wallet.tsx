@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from 'react'
-import { connectWallet, type Address } from './lib/lumensplit'
+import { connectWallet, setActiveAddress, type Address } from './lib/lumensplit'
 import { humanizeError } from './lib/errors'
 
 const KEY = 'lumensplit.address'
@@ -15,11 +15,14 @@ interface WalletState {
 const WalletContext = createContext<WalletState | null>(null)
 
 function initial(): Address | null {
+  let a: Address | null = null
   try {
-    return localStorage.getItem(KEY)
+    a = localStorage.getItem(KEY)
   } catch {
-    return null
+    /* ignore */
   }
+  setActiveAddress(a)
+  return a
 }
 
 export function WalletProvider({ children }: { children: ReactNode }) {
@@ -32,6 +35,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setError(null)
     try {
       const a = await connectWallet()
+      setActiveAddress(a)
       setAddress(a)
       try {
         localStorage.setItem(KEY, a)
@@ -46,6 +50,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const disconnect = useCallback(() => {
+    setActiveAddress(null)
     setAddress(null)
     try {
       localStorage.removeItem(KEY)

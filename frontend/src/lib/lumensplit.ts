@@ -12,6 +12,8 @@
  * - Write functions throw `LumenSplitError` (see ./errors.ts) on failure.
  */
 import * as mockImpl from './mock'
+import { contractError, ContractError, LumenSplitError } from './errors'
+import { explorerTxUrl, parseAmount, toDecimalString } from './format'
 import * as sorobanImpl from './soroban'
 
 export const isMock: boolean = !import.meta.env.VITE_CONTRACT_ID || import.meta.env.VITE_USE_MOCK === 'true'
@@ -33,6 +35,8 @@ export interface Expense {
   participants: Address[]
   /** Unix time in seconds (ledger timestamp). */
   timestamp: number
+  /** What each participant owes, same order as `participants`. Missing on expenses from the old contract. */
+  shares?: bigint[]
 }
 
 export interface Transfer {
@@ -54,6 +58,41 @@ export type TxPhase = 'signing' | 'submitting'
 export interface TxOptions {
   onPhase?: (phase: TxPhase) => void
 }
+
+/** Phase 2 results — amounts as human strings ("43", "12.5"), as agreed with the team. */
+export interface TxLink {
+  hash: string
+  explorerUrl: string
+}
+
+export interface SettleAllResult extends TxLink {
+  transfers: { to: Address; amount: string }[]
+}
+
+export interface Invite {
+  link: string
+  code: string
+}
+
+/** Connected account, used by the phase 2 functions (they take no address). Set by <WalletProvider>. */
+let activeAddress: Address | null = null
+
+export function setActiveAddress(address: Address | null) {
+  activeAddress = address
+}
+
+function requireAddress(): Address {
+  if (!activeAddress) throw new LumenSplitError('Conecta tu wallet primero.')
+  return activeAddress
+}
+
+function toUnits(amount: string): bigint {
+  const v = parseAmount(amount)
+  if (v === null) throw contractError(ContractError.InvalidAmount)
+  return v
+}
+
+const link = (hash: string): TxLink => ({ hash, explorerUrl: explorerTxUrl(hash) })
 
 // ── Wallet ────────────────────────────────────────────────────────────────
 
@@ -120,4 +159,41 @@ export function suggestSettlements(groupId: number): Promise<Transfer[]> {
  */
 export function listMyGroups(address: Address): Promise<Group[]> {
   return mock.listMyGroups(address)
+}
+
+// ── Phase 2: settle all, invites, custom splits ─────────────────────────────
+
+/** Pays every suggested transfer where the connected account is the debtor, in ONE transaction. */
+export async function settleAll(groupId: number, opts?: TxOptions): Promise<SettleAllResult> {
+  const { hash, transfers } = await mock.settleAll(groupId, requireAddress(), opts)
+  return { ...link(hash), transfers: transfers.map((t) => ({ to: t.to, amount: toDecimalString(t.amount) })) }
+}
+
+/**
+ * Generates a random invite code, stores sha256(code) on-chain (the connected
+ * member signs) and returns the link `${origin}/join/<groupId>#<code>`. The
+ * plain code only travels after "#", so it never reaches any server. A new
+ * invite replaces the previous one.
+ */
+export async function createInvite(groupId: number, opts?: TxOptions): Promise<Invite> {
+  const { code, link } = await mock.createInvite(groupId, requireAddress(), opts)
+  return { code, link }
+}
+
+/** The connected account joins the group with balance 0 if `code` (the part after "#") matches the active invite. */
+export async function joinGroup(groupId: number, code: string, opts?: TxOptions): Promise<TxLink> {
+  const { hash } = await mock.joinGroup(groupId, requireAddress(), code.trim(), opts)
+  return link(hash)
+}
+
+/** Expense paid by the connected account where each person owes a different amount. Total = sum of shares. */
+export async function addExpenseCustom(
+  groupId: number,
+  description: string,
+  shares: { address: Address; amount: string }[],
+  opts?: TxOptions,
+): Promise<TxLink> {
+  const parsed = shares.map((s) => ({ address: s.address, amount: toUnits(s.amount) }))
+  const { hash } = await mock.addExpenseCustom(groupId, requireAddress(), description, parsed, opts)
+  return link(hash)
 }
