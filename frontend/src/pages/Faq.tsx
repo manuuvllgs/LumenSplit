@@ -43,7 +43,7 @@ const FAQ: Record<Lang, QA[]> = {
     },
     {
       q: '¿Usáis cookies?',
-      a: 'No. No hay cookies, ni analítica, ni seguimiento. El navegador solo recuerda la cuenta conectada y los apodos que pongas, y no salen de tu dispositivo. Tu nombre se guarda en tu propia cuenta de Stellar, y solo si tú lo eliges.',
+      a: 'No. No hay cookies ni seguimiento entre webs. Solo contamos visitas de forma anónima y agregada (Vercel Web Analytics), sin cookies ni datos personales. El navegador solo recuerda la cuenta conectada y los apodos que pongas, y no salen de tu dispositivo. Tu nombre se guarda en tu propia cuenta de Stellar, y solo si tú lo eliges.',
     },
   ],
   en: [
@@ -85,7 +85,7 @@ const FAQ: Record<Lang, QA[]> = {
     },
     {
       q: 'Do you use cookies?',
-      a: 'No. No cookies, no analytics, no tracking. Your browser only remembers the connected account and the nicknames you set, and they never leave your device. Your name is stored on your own Stellar account, and only if you choose one.',
+      a: 'No. No cookies and no cross-site tracking. We only count visits anonymously and in aggregate (Vercel Web Analytics), with no cookies or personal data. Your browser only remembers the connected account and the nicknames you set, and they never leave your device. Your name is stored on your own Stellar account, and only if you choose one.',
     },
   ],
   pt: [
@@ -127,7 +127,7 @@ const FAQ: Record<Lang, QA[]> = {
     },
     {
       q: 'Usam cookies?',
-      a: 'Não. Não há cookies, nem analítica, nem rastreio. O navegador só guarda a conta ligada e as alcunhas que definir, e nada sai do seu dispositivo. O seu nome fica guardado na sua própria conta Stellar, e só se o escolher.',
+      a: 'Não. Não há cookies nem rastreio entre sites. Só contamos visitas de forma anónima e agregada (Vercel Web Analytics), sem cookies nem dados pessoais. O navegador só guarda a conta ligada e as alcunhas que definir, e nada sai do seu dispositivo. O seu nome fica guardado na sua própria conta Stellar, e só se o escolher.',
     },
   ],
 }
