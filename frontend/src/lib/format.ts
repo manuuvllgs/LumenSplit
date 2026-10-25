@@ -51,3 +51,16 @@ export function formatDate(unixSeconds: number): string {
     minute: '2-digit',
   })
 }
+
+/** 430_000_000n → "43" (dot decimal, no grouping) — the format Horizon/Stellar ops expect. */
+export function toDecimalString(value: bigint): string {
+  const neg = value < 0n
+  const abs = neg ? -value : value
+  const frac = (abs % UNIT).toString().padStart(DECIMALS, '0').replace(/0+$/, '')
+  return `${neg ? '-' : ''}${abs / UNIT}${frac ? `.${frac}` : ''}`
+}
+
+/** "10.8611" → "10,86" */
+export function formatDecimalString(value: string, maxDecimals = 2): string {
+  return Number(value).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: maxDecimals })
+}
