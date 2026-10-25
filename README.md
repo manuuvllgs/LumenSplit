@@ -181,7 +181,7 @@ VITE_PAY_ASSET=EURT:<issuer>   # printed by setup-eurt.mjs; hides "Pay in euros"
 
 | What | ID |
 |---|---|
-| LumenSplit contract | `CCG3JX3CI7HQ3MEMWTJLU7YBPIYUNOL4CFEU6AVJBPJE2IOP7Z6B3DC3` ([explorer](https://stellar.expert/explorer/testnet/contract/CCG3JX3CI7HQ3MEMWTJLU7YBPIYUNOL4CFEU6AVJBPJE2IOP7Z6B3DC3)) |
+| LumenSplit contract | `CAT2TFCFX2IRRYQZREFCASSTAICD6KJGRGE4O3OWYPORL6GRFUIUD5AJ` ([explorer](https://stellar.expert/explorer/testnet/contract/CAT2TFCFX2IRRYQZREFCASSTAICD6KJGRGE4O3OWYPORL6GRFUIUD5AJ)) |
 | Settlement token (native XLM SAC) | `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC` ([explorer](https://stellar.expert/explorer/testnet/contract/CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC)) |
 | Demo euro asset (EURT) | `EURT:GARXWCPKKRVKGJ5D2ESLXF4LZKN5PFTSB5Z6WJK72RBUJV5TB33GP5B2` ([explorer](https://stellar.expert/explorer/testnet/asset/EURT-GARXWCPKKRVKGJ5D2ESLXF4LZKN5PFTSB5Z6WJK72RBUJV5TB33GP5B2)) |
 | EURT/XLM liquidity pool | `e81a98ae098802a5b8412fd30cd9ec8c1b813b59c27bc147768adb8a221382e6` ([explorer](https://stellar.expert/explorer/testnet/liquidity-pool/e81a98ae098802a5b8412fd30cd9ec8c1b813b59c27bc147768adb8a221382e6)) |
