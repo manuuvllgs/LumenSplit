@@ -1,32 +1,48 @@
 @import 'tailwindcss';
 
-/* Design tokens — person 3 can retune the whole app from here. */
+/* Design tokens from docs/brand/tokens.css (person 3). Retune the whole app from here. */
 @theme {
   --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
 
-  --color-brand-50: #eef4ff;
-  --color-brand-100: #dbe6ff;
-  --color-brand-600: #3b5bdb;
-  --color-brand-700: #2f4ac0;
-  --color-brand-800: #263c99;
+  /* primary */
+  --color-brand-50: #f5f4ff;
+  --color-brand-100: #eeecff;
+  --color-brand-300: #b3abff;
+  --color-brand-600: #5b4bff;
+  --color-brand-700: #4a3be6;
+  --color-brand-800: #3527b8;
 
-  --color-ink-50: #f7f8fa;
-  --color-ink-100: #eef0f4;
-  --color-ink-200: #dde1e8;
-  --color-ink-400: #98a1b3;
-  --color-ink-500: #6b7489;
-  --color-ink-700: #3a4256;
-  --color-ink-900: #141a2b;
+  /* accent: the "lumen" — Settle up / Pay */
+  --color-accent-50: #fff4d6;
+  --color-accent-400: #ffc23d;
+  --color-accent-500: #f5b21c;
 
-  --color-pos-50: #ecfdf3;
-  --color-pos-600: #16a34a;
-  --color-pos-700: #15803d;
+  --color-ink-50: #f7f7fb;
+  --color-ink-100: #efeff5;
+  --color-ink-200: #e4e4ee;
+  --color-ink-400: #98a2b3;
+  --color-ink-500: #667085;
+  --color-ink-700: #344054;
+  --color-ink-900: #15132e;
 
-  --color-neg-50: #fef2f2;
-  --color-neg-600: #dc2626;
-  --color-neg-700: #b91c1c;
+  --color-pos-50: #e7f8ef;
+  --color-pos-600: #067647;
+  --color-pos-700: #055c37;
+
+  --color-neg-50: #feeceb;
+  --color-neg-600: #d92d20;
+  --color-neg-700: #b42318;
+
+  --radius-2xl: 16px;
+  --shadow-sm: 0 1px 2px rgba(21, 19, 46, 0.06), 0 4px 16px rgba(21, 19, 46, 0.06);
 }
 
 body {
   @apply bg-ink-50 font-sans text-ink-900 antialiased;
+}
+
+h1,
+h2 {
+  @apply font-display;
 }

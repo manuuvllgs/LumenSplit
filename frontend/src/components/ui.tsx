@@ -4,7 +4,7 @@ import { setAlias, useAliases } from '../lib/aliases'
 import { explorerTxUrl, formatAmount, shortAddress } from '../lib/format'
 import type { TxState } from '../useTx'
 
-type Variant = 'primary' | 'secondary' | 'ghost'
+type Variant = 'primary' | 'accent' | 'secondary' | 'ghost'
 
 export function Button({
   variant = 'primary',
@@ -18,6 +18,7 @@ export function Button({
     'inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50'
   const styles: Record<Variant, string> = {
     primary: 'bg-brand-600 text-white hover:bg-brand-700 shadow-sm',
+    accent: 'bg-accent-400 text-ink-900 hover:bg-accent-500 shadow-sm',
     secondary: 'bg-white text-ink-900 ring-1 ring-ink-200 hover:bg-ink-50',
     ghost: 'text-brand-700 hover:bg-brand-50',
   }
@@ -58,8 +59,8 @@ export function PageHeader({ title, back, right }: { title: string; back?: strin
 
 export function Amount({ value, signed = false, className = '' }: { value: bigint; signed?: boolean; className?: string }) {
   const color = !signed || value === 0n ? 'text-ink-700' : value > 0n ? 'text-pos-600' : 'text-neg-600'
-  const text = signed && value > 0n ? `+${formatAmount(value)}` : formatAmount(value)
-  return <span className={`font-semibold tabular-nums ${color} ${className}`}>{text}</span>
+  const text = signed && value > 0n ? `+${formatAmount(value, true, 2)}` : formatAmount(value, true, 2)
+  return <span className={`font-display font-bold tabular-nums ${color} ${className}`}>{text}</span>
 }
 
 export function Avatar({ address }: { address: string }) {
@@ -138,11 +139,11 @@ export function MemberName({ address, me, editable = false }: { address: string;
 }
 
 const PHASE_TEXT = {
-  signing: 'Firma la transacción en Freighter…',
-  submitting: 'Confirmando en la red Stellar…',
+  signing: 'Confirma en Freighter…',
+  submitting: 'Enviando por Stellar…',
 }
 
-export function TxStatus({ state, successText = 'Transacción confirmada' }: { state: TxState; successText?: string }) {
+export function TxStatus({ state, successText = 'Hecho' }: { state: TxState; successText?: string }) {
   if (state.status === 'idle') return null
   if (state.status === 'signing' || state.status === 'submitting') {
     return (
