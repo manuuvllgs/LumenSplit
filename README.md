@@ -379,8 +379,6 @@ Distributed under the MIT License. See [`LICENSE`](LICENSE) for more information
 - [Stellar Development Foundation](https://stellar.org) and the [HackMeridian][hackmeridian-url] organisers, mentors and judges
 - [Stellar developer docs](https://developers.stellar.org) and [Stellar Expert](https://stellar.expert)
 - [Freighter](https://www.freighter.app/) wallet
-- [Shields.io](https://shields.io) for the badges
-- [Best-README-Template](https://github.com/othneildrew/Best-README-Template) for the structure of this README
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
