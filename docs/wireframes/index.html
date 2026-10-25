@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LumenSplit wireframes</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../brand/tokens.css">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: var(--ls-font-sans); background: #E9E9F2; color: var(--ls-text); padding: 32px; }
+  h1 { font-family: var(--ls-font-display); font-size: 22px; margin-bottom: 4px; }
+  .lead { color: var(--ls-text-muted); margin-bottom: 24px; font-size: 14px; }
+  .row { display: flex; gap: 28px; flex-wrap: wrap; align-items: flex-start; }
+  .screen-wrap { width: 360px; }
+  .label { font-family: var(--ls-font-display); font-weight: 700; font-size: 15px; margin-bottom: 8px; }
+  .label span { color: var(--ls-primary); margin-right: 6px; }
+  .phone { width: 360px; height: 720px; background: var(--ls-bg); border-radius: 28px; border: 8px solid var(--ls-ink); overflow: hidden; display: flex; flex-direction: column; position: relative; }
+  .notes { font-size: 12.5px; color: #3F3D56; margin-top: 10px; line-height: 1.5; padding-left: 16px; }
+  .notes li { margin-bottom: 3px; }
+
+  .top { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px 8px; }
+  .top img { height: 26px; }
+  .back { font-size: 14px; color: var(--ls-primary); font-weight: 600; }
+  .title { font-family: var(--ls-font-display); font-weight: 700; font-size: 22px; padding: 4px 18px 12px; }
+  .body { padding: 0 18px; flex: 1; overflow: hidden; }
+  .card { background: var(--ls-surface); border-radius: var(--ls-radius); box-shadow: var(--ls-shadow); padding: 14px 16px; margin-bottom: 12px; }
+  .muted { color: var(--ls-text-muted); font-size: 13px; }
+  .small { font-size: 12px; }
+  .btn { display: block; width: 100%; text-align: center; border-radius: var(--ls-radius-sm); padding: 14px; font-weight: 600; font-size: 15px; border: 0; }
+  .btn-primary { background: var(--ls-primary); color: #fff; }
+  .btn-accent { background: var(--ls-accent); color: var(--ls-ink); }
+  .btn-ghost { background: var(--ls-primary-soft); color: var(--ls-primary); }
+  .footer { padding: 14px 18px 18px; }
+  .pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 99px; }
+  .pill-pos { background: var(--ls-positive-soft); color: var(--ls-positive); }
+  .pill-neg { background: var(--ls-negative-soft); color: var(--ls-negative); }
+  .pill-zero { background: #F0F1F4; color: var(--ls-zero); }
+  .between { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--ls-primary-soft); color: var(--ls-primary); display: grid; place-items: center; font-weight: 700; font-size: 13px; flex: none; }
+  .who { display: flex; align-items: center; gap: 10px; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .input { background: var(--ls-surface); border: 1px solid var(--ls-border); border-radius: var(--ls-radius-sm); padding: 12px; font-size: 15px; color: var(--ls-text-muted); }
+  .input.filled { color: var(--ls-text); }
+  .check { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--ls-border); font-size: 14px; }
+  .box { width: 20px; height: 20px; border-radius: 6px; border: 2px solid var(--ls-primary); background: var(--ls-primary); color: #fff; font-size: 13px; display: grid; place-items: center; }
+  .box.off { background: transparent; }
+  .hero { text-align: center; padding: 18px 0 8px; }
+  .hero .ls-amount--hero { font-size: 44px; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+  .tab { flex: 1; text-align: center; padding: 8px; border-radius: 99px; font-size: 13px; font-weight: 600; background: var(--ls-surface); color: var(--ls-text-muted); }
+  .tab.on { background: var(--ls-ink); color: #fff; }
+  .arrow { color: var(--ls-text-muted); font-size: 18px; }
+  .toast { background: var(--ls-ink); color: #fff; border-radius: var(--ls-radius-sm); padding: 12px 14px; font-size: 13px; }
+  .toast a { color: var(--ls-accent); font-weight: 600; text-decoration: none; }
+  .connect { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 0 26px; text-align: center; }
+</style>
+</head>
+<body>
+<h1>LumenSplit · wireframes v1</h1>
+<p class="lead">Mobile-first, 360px. Colours and fonts come from <code>docs/brand/tokens.css</code>. Notes under each screen are for the frontend.</p>
+
+<div class="row">
+
+<!-- 0. Welcome (not connected) -->
+<div class="screen-wrap">
+  <div class="label"><span>1a</span>Home · not signed in</div>
+  <div class="phone">
+    <div class="connect">
+      <img src="../brand/logo-mark.svg" alt="" style="width:84px;margin:0 auto 22px">
+      <div style="font-family:var(--ls-font-display);font-weight:700;font-size:28px;line-height:1.15;margin-bottom:10px">Split bills.<br>Settle in seconds.</div>
+      <p class="muted" style="margin-bottom:28px">Track shared expenses with friends and pay them back instantly, from anywhere in the world.</p>
+      <button class="btn btn-primary">Connect Freighter wallet</button>
+      <p class="muted small" style="margin-top:12px">No wallet yet? <span style="color:var(--ls-primary);font-weight:600">Get Freighter</span></p>
+    </div>
+  </div>
+  <ul class="notes">
+    <li>Única pantalla con mensaje de marketing: es la primera imagen del vídeo.</li>
+    <li>Si Freighter no está instalado, el botón abre freighter.app.</li>
+  </ul>
+</div>
+
+<!-- 1. Home -->
+<div class="screen-wrap">
+  <div class="label"><span>1b</span>Home · my groups</div>
+  <div class="phone">
+    <div class="top"><img src="../brand/logo.svg" alt="LumenSplit"><span class="pill pill-zero">GA7Q…K3PD</span></div>
+    <div class="body">
+      <div class="card" style="background:var(--ls-ink);color:#fff">
+        <div class="small" style="opacity:.7">Overall, you are owed</div>
+        <div class="ls-amount" style="font-size:32px;color:var(--ls-accent)">+42.50 XLM</div>
+      </div>
+      <div class="between" style="margin:18px 0 10px"><b>Your groups</b><span class="muted">3</span></div>
+      <div class="card between"><div><b>Lisbon trip 🇵🇹</b><div class="muted">4 people · 6 expenses</div></div><span class="pill pill-pos">you get 30.00</span></div>
+      <div class="card between"><div><b>Flat Rua Augusta</b><div class="muted">3 people · 12 expenses</div></div><span class="pill pill-neg">you owe 7.50</span></div>
+      <div class="card between"><div><b>Erasmus dinner</b><div class="muted">5 people · 2 expenses</div></div><span class="pill pill-zero">all settled</span></div>
+    </div>
+    <div class="footer"><button class="btn btn-primary">+ New group</button></div>
+  </div>
+  <ul class="notes">
+    <li>Datos: listMyGroups() + getBalances() de cada grupo para la etiqueta.</li>
+    <li>La tarjeta oscura suma mi saldo en todos los grupos (opcional si no da tiempo).</li>
+    <li>Dirección propia acortada arriba a la derecha.</li>
+  </ul>
+</div>
+
+<!-- 2. New group -->
+<div class="screen-wrap">
+  <div class="label"><span>2</span>New group</div>
+  <div class="phone">
+    <div class="top"><span class="back">‹ Back</span><span></span></div>
+    <div class="title">New group</div>
+    <div class="body">
+      <div class="field"><label>Group name</label><div class="input filled">Lisbon trip 🇵🇹</div></div>
+      <div class="field"><label>Pay each other in</label>
+        <div class="tabs" style="margin:0"><div class="tab on">XLM</div><div class="tab">USDC</div></div>
+      </div>
+      <div class="field"><label>Members</label>
+        <div class="card" style="padding:4px 14px">
+          <div class="check" style="border:0"><div class="avatar">You</div><div><b>You</b><div class="muted small">GA7Q…K3PD · added automatically</div></div></div>
+        </div>
+        <div class="card" style="padding:10px 14px">
+          <div class="between"><div class="who"><div class="avatar">B</div><div><b>Ben</b><div class="muted small">GBX2…9WQA</div></div></div><span class="muted">✕</span></div>
+        </div>
+        <div class="card" style="padding:10px 14px">
+          <div class="between"><div class="who"><div class="avatar">C</div><div><b>Carla</b><div class="muted small">GCF5…ZT41</div></div></div><span class="muted">✕</span></div>
+        </div>
+        <div class="input" style="margin-bottom:8px">Friend's name (optional)</div>
+        <div class="input">Wallet address  G…</div>
+      </div>
+    </div>
+    <div class="footer"><button class="btn btn-primary">Create group</button></div>
+  </div>
+  <ul class="notes">
+    <li>Validar que la dirección empieza por G y tiene 56 caracteres antes de añadir.</li>
+    <li>El nombre es un alias guardado en local (localStorage), no va al contrato.</li>
+    <li>Si solo hay un token configurado, ocultar el selector XLM/USDC.</li>
+  </ul>
+</div>
+
+<!-- 3. Group detail -->
+<div class="screen-wrap">
+  <div class="label"><span>3</span>Group detail</div>
+  <div class="phone">
+    <div class="top"><span class="back">‹ Groups</span><span class="muted small">XLM</span></div>
+    <div class="title" style="padding-bottom:4px">Lisbon trip 🇵🇹</div>
+    <div class="body">
+      <div class="hero"><div class="muted">You are owed</div><div class="ls-amount ls-amount--hero ls-pos">+30.00</div><div class="muted">XLM</div></div>
+      <div class="tabs" style="margin-top:12px"><div class="tab on">Balances</div><div class="tab">Expenses</div></div>
+      <div class="card" style="padding:6px 14px">
+        <div class="check between"><div class="who"><div class="avatar">You</div>You</div><b class="ls-amount ls-pos">+30.00</b></div>
+        <div class="check between"><div class="who"><div class="avatar">B</div>Ben</div><b class="ls-amount ls-neg">−22.50</b></div>
+        <div class="check between"><div class="who"><div class="avatar">C</div>Carla</div><b class="ls-amount ls-neg">−7.50</b></div>
+        <div class="check between" style="border:0"><div class="who"><div class="avatar">D</div>Dani</div><b class="ls-amount" style="color:var(--ls-zero)">0.00</b></div>
+      </div>
+      <div class="muted small" style="text-align:center">Green = gets money back · Red = owes money</div>
+    </div>
+    <div class="footer" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button class="btn btn-ghost">+ Add expense</button>
+      <button class="btn btn-accent">Settle up</button>
+    </div>
+  </div>
+  <ul class="notes">
+    <li>Pestaña Expenses: lista de getExpenses() → "Dinner · paid by Ben · 45.00 · 3 people · hace 2 h".</li>
+    <li>Importe gigante = MI saldo. Verde si &gt;0, rojo si &lt;0, gris si 0 ("You're all settled").</li>
+    <li>Nunca mostrar i128: siempre 2 decimales.</li>
+  </ul>
+</div>
+
+<!-- 4. Add expense -->
+<div class="screen-wrap">
+  <div class="label"><span>4</span>Add expense</div>
+  <div class="phone">
+    <div class="top"><span class="back">‹ Lisbon trip</span><span></span></div>
+    <div class="title">Add expense</div>
+    <div class="body">
+      <div class="hero" style="padding:4px 0 16px"><div class="ls-amount ls-amount--hero">45.00</div><div class="muted">XLM</div></div>
+      <div class="field"><label>What was it?</label><div class="input filled">Dinner at Time Out Market</div></div>
+      <div class="field"><label>Paid by</label><div class="input filled">You</div></div>
+      <div class="field"><label>Split equally between</label>
+        <div class="card" style="padding:2px 14px">
+          <div class="check between"><div class="who"><div class="box">✓</div>You</div><span class="muted">15.00</span></div>
+          <div class="check between"><div class="who"><div class="box">✓</div>Ben</div><span class="muted">15.00</span></div>
+          <div class="check between"><div class="who"><div class="box">✓</div>Carla</div><span class="muted">15.00</span></div>
+          <div class="check between" style="border:0"><div class="who"><div class="box off"></div>Dani</div><span class="muted">—</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><button class="btn btn-primary">Save expense</button></div>
+  </div>
+  <ul class="notes">
+    <li>El importe es lo primero y grande; teclado numérico (inputmode="decimal").</li>
+    <li>"Paid by" fijo a "You" (el contrato exige que firme el pagador).</li>
+    <li>Mostrar la parte de cada uno en vivo al marcar/desmarcar.</li>
+  </ul>
+</div>
+
+<!-- 5. Settle up -->
+<div class="screen-wrap">
+  <div class="label"><span>5</span>Settle up</div>
+  <div class="phone">
+    <div class="top"><span class="back">‹ Lisbon trip</span><span></span></div>
+    <div class="title" style="padding-bottom:2px">Settle up</div>
+    <div class="body">
+      <p class="muted" style="margin-bottom:14px">The fewest payments to get everyone back to zero.</p>
+      <div class="card" style="border:2px solid var(--ls-accent)">
+        <div class="between"><div class="who"><div class="avatar">You</div><span class="arrow">→</span><div class="avatar">B</div></div><b class="ls-amount" style="font-size:22px">12.00</b></div>
+        <div class="muted" style="margin:8px 0 12px">You pay Ben</div>
+        <button class="btn btn-accent">Pay 12.00 XLM</button>
+      </div>
+      <div class="card">
+        <div class="between"><div class="who"><div class="avatar">C</div><span class="arrow">→</span><div class="avatar">D</div></div><b class="ls-amount" style="font-size:22px">7.50</b></div>
+        <div class="muted" style="margin-top:8px">Carla pays Dani</div>
+      </div>
+      <div class="toast" style="margin-top:18px">✓ Paid 12.00 XLM to Ben in 5 s · fee 0.00001 XLM<br><a href="#">View on Stellar Expert ↗</a></div>
+    </div>
+  </div>
+  <ul class="notes">
+    <li>Datos: suggestSettlements(). Botón "Pay" solo en los pagos donde from == yo.</li>
+    <li>Estados del botón: "Confirm in Freighter…" → "Sending…" → toast con enlace a stellar.expert/explorer/testnet/tx/&lt;hash&gt;.</li>
+    <li>El toast con tiempo y comisión es EL plano del vídeo: que se vea bien.</li>
+  </ul>
+</div>
+
+</div>
+</body>
+</html>
