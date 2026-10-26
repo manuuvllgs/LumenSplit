@@ -5,3 +5,5 @@ node_modules/
 
 # Hallmark design-skill working files
 .hallmark/
+
+.DS_Store

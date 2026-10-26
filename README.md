@@ -128,13 +128,21 @@ Nobody can rewrite the history, and every payment has a public receipt on the ex
 <!-- DEMO -->
 ## 🎬 Demo
 
-> **Video (2–3 min):** _TODO: add YouTube/Loom link_
+<p align="center">
+  <a href="https://github.com/manuuvllgs/LumenSplit/blob/main/docs/demo/lumensplit-demo.mp4">
+    <img src="docs/demo/poster.png" alt="Watch the LumenSplit demo video" width="800">
+  </a>
+  <br>
+  <a href="https://github.com/manuuvllgs/LumenSplit/blob/main/docs/demo/lumensplit-demo.mp4"><strong>▶ Watch the demo (2:49)</strong></a>
+</p>
+
+Balances computed by the contract, **Settle all** in one atomic transaction, invites by link or QR, custom amounts, **paying in euros** through Stellar's built-in exchange, and passkey wallets with [Nido](https://test.nido.fyi) by The Aha Company, in dark mode.
 
 | Home | Group | Settle up |
 |:---:|:---:|:---:|
-| _TODO screenshot_ | _TODO screenshot_ | _TODO screenshot_ |
+| <img src="docs/demo/screenshot-home.png" alt="Home" width="300"> | <img src="docs/demo/screenshot-group.png" alt="Group" width="300"> | <img src="docs/demo/screenshot-settle.png" alt="Settle up" width="300"> |
 
-Design wireframes: [`docs/wireframes/`](docs/wireframes/) · Brand kit: [`docs/brand/`](docs/brand/) · Video runbook: [`docs/demo-runbook.md`](docs/demo-runbook.md)
+Design wireframes: [`docs/wireframes/`](docs/wireframes/) · Brand kit: [`docs/brand/`](docs/brand/) · Video runbook: [`docs/demo-runbook.md`](docs/demo-runbook.md) · Video source (Remotion): [`video/`](video/)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -310,7 +318,7 @@ cargo test
 
 | What | ID |
 |---|---|
-| LumenSplit contract | [`CAT2TFCFX2IRRYQZREFCASSTAICD6KJGRGE4O3OWYPORL6GRFUIUD5AJ`][contract-url] |
+| LumenSplit contract | [`CBCRUQ2EQXN6E7YCNM2K3M2NHUU6IZUZWX65PAVROL2VWQC2DCWWYNEX`][contract-url] |
 | Settlement token (native XLM SAC) | [`CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC`](https://stellar.expert/explorer/testnet/contract/CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC) |
 | Demo euro asset (EURT) | [`EURT:GARXWCPKKRVKGJ5D2ESLXF4LZKN5PFTSB5Z6WJK72RBUJV5TB33GP5B2`](https://stellar.expert/explorer/testnet/asset/EURT-GARXWCPKKRVKGJ5D2ESLXF4LZKN5PFTSB5Z6WJK72RBUJV5TB33GP5B2) |
 | EURT/XLM liquidity pool | [`e81a98ae…221382e6`](https://stellar.expert/explorer/testnet/liquidity-pool/e81a98ae098802a5b8412fd30cd9ec8c1b813b59c27bc147768adb8a221382e6) |
@@ -386,7 +394,7 @@ Distributed under the MIT License. See [`LICENSE`](LICENSE) for more information
 [hackmeridian-shield]: https://img.shields.io/badge/HackMeridian-Lisbon%202026-5b4bff?style=for-the-badge
 [hackmeridian-url]: https://www.hackmeridian.com/
 [stellar-shield]: https://img.shields.io/badge/Stellar-testnet-ffc23d?style=for-the-badge&logo=stellar&logoColor=black
-[contract-url]: https://stellar.expert/explorer/testnet/contract/CAT2TFCFX2IRRYQZREFCASSTAICD6KJGRGE4O3OWYPORL6GRFUIUD5AJ
+[contract-url]: https://stellar.expert/explorer/testnet/contract/CBCRUQ2EQXN6E7YCNM2K3M2NHUU6IZUZWX65PAVROL2VWQC2DCWWYNEX
 [tests-shield]: https://img.shields.io/badge/tests-15%20passing-2ea44f?style=for-the-badge
 [i18n-shield]: https://img.shields.io/badge/i18n-ES%20·%20EN%20·%20PT-15132e?style=for-the-badge
 [license-shield]: https://img.shields.io/badge/license-MIT-blue?style=for-the-badge
