@@ -26,7 +26,9 @@
     <a href="#-how-it-works"><strong>Explore how it works »</strong></a>
     <br />
     <br />
-    <a href="#-demo">🎬 Watch the demo</a>
+    <a href="https://lumensplit.vercel.app"><strong>🌐 Try the live app</strong></a>
+    &middot;
+    <a href="https://youtu.be/u57OSypg87w">🎬 Watch the demo</a>
     &middot;
     <a href="#-getting-started">🚀 Run it locally</a>
     &middot;
@@ -100,8 +102,10 @@ Nobody can rewrite the history, and every payment has a public receipt on the ex
 | ⚡ | **Settle all, atomically** | Pay every debt you have in the group with **one signature**, in one transaction. All payments go through or none do. |
 | 💶 | **Pay in euros** | Only hold euros? Stellar's built-in exchange converts them on the fly and your friend receives the exact amount owed. |
 | 🛡️ | **Overpay protection** | You can only pay what you actually owe to someone who is actually owed. |
+| 🔑 | **Passkey wallets** | No extension, no seed phrase: create a smart account with Face ID or Touch ID through [Nido](https://test.nido.fyi) by The Aha Company (HackMeridian partner), then authorize LumenSplit once, with a daily XLM limit the account enforces on-chain. Freighter works too. |
 | 🙋 | **Names, not addresses** | Everyone picks a display name, stored on their own Stellar account. |
 | 🌍 | **Español · English · Português** | The whole app is translated, with a flag switcher in the top bar. |
+| 🌙 | **Light and dark mode** | Switch themes from the top bar. |
 | 🍪 | **No cookies, no tracking** | Nothing to accept. The browser only remembers your connected account and language. |
 
 ### 🌟 Why Stellar
@@ -129,12 +133,14 @@ Nobody can rewrite the history, and every payment has a public receipt on the ex
 ## 🎬 Demo
 
 <p align="center">
-  <a href="https://github.com/manuuvllgs/LumenSplit/blob/main/docs/demo/lumensplit-demo.mp4">
+  <a href="https://youtu.be/u57OSypg87w">
     <img src="docs/demo/poster.png" alt="Watch the LumenSplit demo video" width="800">
   </a>
   <br>
-  <a href="https://github.com/manuuvllgs/LumenSplit/blob/main/docs/demo/lumensplit-demo.mp4"><strong>▶ Watch the demo (2:49)</strong></a>
+  <a href="https://youtu.be/u57OSypg87w"><strong>▶ Watch the demo on YouTube (2:49)</strong></a> · <a href="https://github.com/manuuvllgs/LumenSplit/blob/main/docs/demo/lumensplit-demo.mp4">or the MP4 in this repo</a>
 </p>
+
+**Live app:** [lumensplit.vercel.app](https://lumensplit.vercel.app) (Stellar testnet; connect [Freighter](https://www.freighter.app/) on Testnet, or sign in with a passkey).
 
 Balances computed by the contract, **Settle all** in one atomic transaction, invites by link or QR, custom amounts, **paying in euros** through Stellar's built-in exchange, and passkey wallets with [Nido](https://test.nido.fyi) by The Aha Company, in dark mode.
 
@@ -338,11 +344,11 @@ cargo test
 - [x] Invite friends by link or QR (hashed codes)
 - [x] Pay in euros through path payments and the native AMM
 - [x] Spanish, English and Portuguese
+- [x] Passkey smart wallets with Nido, so friends don't need to install anything
 - [ ] Real stablecoins (EURC, USDC) as group and payment assets
 - [ ] "Settle all in euros" in one tap
 - [ ] Cash out to a bank account through Stellar anchors (SEP-24)
 - [ ] Recurring expenses and percentage splits
-- [ ] Passkey smart wallets, so friends don't need to install anything
 - [ ] Mainnet and mobile app
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
