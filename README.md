@@ -30,6 +30,8 @@
     &middot;
     <a href="https://youtu.be/u57OSypg87w">🎬 Watch the demo</a>
     &middot;
+    <a href="docs/pitch/LumenSplit-pitch-deck.pdf">📊 Pitch deck</a>
+    &middot;
     <a href="#-getting-started">🚀 Run it locally</a>
     &middot;
     <a href="#-smart-contract-api">📜 Contract API</a>
@@ -148,7 +150,7 @@ Balances computed by the contract, **Settle all** in one atomic transaction, inv
 |:---:|:---:|:---:|
 | <img src="docs/demo/screenshot-home.png" alt="Home" width="300"> | <img src="docs/demo/screenshot-group.png" alt="Group" width="300"> | <img src="docs/demo/screenshot-settle.png" alt="Settle up" width="300"> |
 
-Design wireframes: [`docs/wireframes/`](docs/wireframes/) · Brand kit: [`docs/brand/`](docs/brand/) · Video runbook: [`docs/demo-runbook.md`](docs/demo-runbook.md) · Video source (Remotion): [`video/`](video/)
+Pitch deck: [`docs/pitch/LumenSplit-pitch-deck.pdf`](docs/pitch/LumenSplit-pitch-deck.pdf) · Design wireframes: [`docs/wireframes/`](docs/wireframes/) · Brand kit: [`docs/brand/`](docs/brand/) · Video runbook: [`docs/demo-runbook.md`](docs/demo-runbook.md) · Video source (Remotion): [`video/`](video/)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
