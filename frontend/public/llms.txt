@@ -1,0 +1,32 @@
+# LumenSplit
+
+> Split bills with friends and settle up in seconds, from anywhere. A bill-splitting web app where the group's ledger lives in a Soroban smart contract on Stellar and every debt can be paid from inside the app. Built at HackMeridian Lisbon 2026 (Genesis track). Runs on Stellar testnet.
+
+## What it does
+- Groups and expenses, split equally or with custom amounts; balances always sum to zero.
+- The contract computes the fewest payments that clear the group (suggest_settlements).
+- "Settle all": pay every debt you have in one atomic transaction with one signature (settle_all).
+- Pay in euros: a path payment through Stellar's native AMM converts EUR (demo asset EURT) to XLM; the friend receives the exact amount owed.
+- Join a group by link or QR code; only the SHA-256 hash of the invite secret is stored on-chain (create_invite, join_group).
+- Overpay protection: you can only pay what you owe, to someone who is owed.
+- Wallets: Freighter, or a passkey smart account (C… address) created with Nido by The Aha Company; the owner authorizes LumenSplit once for 7 days with a daily XLM cap enforced on-chain.
+- English, Spanish and Portuguese; light and dark mode; installable PWA; no cookies, no tracking.
+
+## Pages
+- [Home](https://lumensplit.vercel.app/): connect Freighter or sign in with a passkey, list of your groups.
+- [FAQ](https://lumensplit.vercel.app/faq): how it works, fees, wallets, privacy.
+- Group pages (/g/:id, /g/:id/expense, /g/:id/settle) and invite links (/join/:id) need a connected wallet.
+
+## On-chain
+- Network: Stellar testnet (https://soroban-testnet.stellar.org)
+- Contract: CBCRUQ2EQXN6E7YCNM2K3M2NHUU6IZUZWX65PAVROL2VWQC2DCWWYNEX (https://stellar.expert/explorer/testnet/contract/CBCRUQ2EQXN6E7YCNM2K3M2NHUU6IZUZWX65PAVROL2VWQC2DCWWYNEX)
+- Token: native XLM via its Stellar Asset Contract CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC
+- Contract API: create_group, add_expense, add_expense_custom, get_balances, suggest_settlements, settle, settle_all, create_invite, join_group, plus read-only views.
+
+## Links
+- [Source code and README](https://github.com/manuuvllgs/LumenSplit)
+- [Demo video](https://youtu.be/u57OSypg87w)
+- [Pitch deck (PDF)](https://github.com/manuuvllgs/LumenSplit/blob/main/docs/pitch/LumenSplit-pitch-deck.pdf)
+
+## Team
+Manuel Villegas (contract, deployment, integration), Gregorio Torres (frontend), Alejandro Teva (design, pitch, video).
